@@ -13,7 +13,9 @@ pytsmp
    :target: https://travis-ci.org/kithomak/pytsmp
    :alt: Latest Travis CI build status
 
-A Python implementation of the matrix profile.
+A Python implementation of the matrix profile. More details about matrix profile can be
+found in the `UCR Matrix Profile Page <http://www.cs.ucr.edu/~eamonn/MatrixProfile.html>`_
+by the paper authors.
 
 Currently, only MASS and STAMP (single-core, no GPU support) is implemented.
 I plan to implement other algorithms (STOMP, SCRIMP++), their parallelized version,
@@ -103,7 +105,6 @@ Reference
 Yeh CCM, Zhu Y, Ulanova L, Begum N, Ding Y, Dau HA, et al. "Matrix profile I: All pairs similarity joins
 for time series: A unifying view that includes motifs, discords and shapelets".
 *Proc - IEEE Int Conf Data Mining, ICDM. 2017;1317–22*.
-(http://www.cs.ucr.edu/~eamonn/MatrixProfile.html)
 
 
 .. comment
