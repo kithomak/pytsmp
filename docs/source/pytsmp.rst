@@ -1,9 +1,6 @@
 pytsmp package
 ==============
 
-Submodules
-----------
-
 pytsmp.MatrixProfile class
 --------------------------
 
@@ -27,10 +24,3 @@ pytsmp.utils module
     :show-inheritance:
 
 
-Module contents
----------------
-
-.. automodule:: pytsmp
-    :members:
-    :undoc-members:
-    :show-inheritance:

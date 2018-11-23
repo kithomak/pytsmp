@@ -16,7 +16,7 @@ def read(filename):
 setup(
     name="pytsmp",
     version="0.1.0",
-    url="https://github.com/mcnuggets-lab/pytsmp",
+    url="https://github.com/kithomak/pytsmp",
     license='MIT',
 
     author="Kit-Ho Mak",
@@ -27,7 +27,10 @@ setup(
 
     packages=find_packages(exclude=('tests',)),
 
-    install_requires=[],
+    install_requires=[
+        "numpy",
+        "tqdm"
+    ],
 
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',

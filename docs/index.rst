@@ -10,7 +10,8 @@ Welcome to pytsmp's documentation!
    :maxdepth: 2
    :caption: Contents:
 
-   source/modules
+   Introduction <source/readme>
+   Modules <source/modules>
 
 
 
