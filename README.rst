@@ -67,8 +67,7 @@ Incremental of the time series and the query is supported.
    mp = STAMP(ts, window_size=50)
    mat_profile, _ = mp.get_profiles()
 
-   # create the matrix profile of the first 999 steps
-   # and increment the last step later
+   # create the matrix profile of the first 999 steps and increment the last step later
    mp_inc = STAMP(ts[:-1], window_size=50)
    mp_inc.update_ts1(ts[-1])  # similarly, you can update the query by update_ts2()
    mat_profile_inc, _ = mp_inc.get_profiles()
@@ -102,9 +101,13 @@ On my MacBook Pro with 2.2 GHz Intel Core i7, the result is 2min 14s ± 2.17s.
 Reference
 ---------
 
-Yeh CCM, Zhu Y, Ulanova L, Begum N, Ding Y, Dau HA, et al. "Matrix profile I: All pairs similarity joins
-for time series: A unifying view that includes motifs, discords and shapelets".
-*Proc - IEEE Int Conf Data Mining, ICDM. 2017;1317–22*.
+C.C.M. Yeh, Y. Zhu, L. Ulanova, N. Begum, Y. Ding, H.A. Dau, D. Silva, A. Mueen and E. Keogh.
+"Matrix profile I: All pairs similarity joins for time series: A unifying view that includes
+motifs, discords and shapelets". IEEE ICDM 2016.
+
+Y. Zhu, Z. Zimmerman, N.S. Senobari, C.C.M. Yeh, G. Funning, A. Mueen, P. Berisk and E. Keogh.
+"Matrix Profile II: Exploiting a Novel Algorithm and GPUs to Break the One Hundred Million
+Barrier for Time Series Motifs and Joins". IEEE ICDM 2016.
 
 
 .. comment

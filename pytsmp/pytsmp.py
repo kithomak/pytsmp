@@ -1,18 +1,17 @@
+from abc import ABC, abstractmethod
 import numpy as np
 from tqdm import tqdm
 
 from pytsmp import utils
 
 
-class MatrixProfile:
+class MatrixProfile(ABC):
     """
-    The base class for matrix profile computation. **Do not** initialize from this class directly.
+    The base class for matrix profile computation. This is an abstract class, you cannot instantiate from this class.
     """
-    _is_anytime = False
-
     def __init__(self, ts1, ts2=None, window_size=None, exclusion_zone=1/2, verbose=True, s_size=1):
         """
-        Base initialize.
+        Base constructor.
 
         :param ts1: Time series for calculating the matrix profile.
         :type ts1: numpy array
@@ -48,35 +47,68 @@ class MatrixProfile:
         self._same_ts = ts2 is None
         self._matrix_profile = np.full((len(self.ts1) - self.window_size + 1,), np.inf)
         self._index_profile = np.full((len(self.ts1) - self.window_size + 1,), np.nan)
-        if self._is_anytime:
-            idxes = np.random.permutation(range(len(self.ts2) - self.window_size + 1))[:self.s_length]
-        else:
-            idxes = np.arange(len(self.ts2) - self.window_size + 1)
-        if self.verbose:
-            self._iterator = tqdm(idxes)
-        else:
-            self._iterator = idxes
 
         self._compute_matrix_profile()
+
+    @property
+    @abstractmethod
+    def _is_anytime(self):
+        """
+        A property stating whether the algorithm for computing the matrix profile
+        in this class is an anytime algorithm.
+
+        :return: whether the algorithm in this class is an anytime algorithm.
+        :rtype: bool
+        """
+        return False
+
+    @property
+    @abstractmethod
+    def _iterator(self):
+        """
+        The iterator to use in the computation of matrix profile. Defined separately to accomodate
+        resume computation of anytime algorithms.
+
+        :return: Iterator used in the computation of matrix profile.
+        :rtype: iterator
+        """
+        return NotImplementedError
+
+    def get_matrix_profile(self):
+        """
+        Get the matrix profile.
+
+        :return: The matrix profile.
+        :rtype: numpy array, of shape (len(ts1)-windows_size+1,)
+        """
+        return np.copy(self._matrix_profile)
+
+    def get_index_profile(self):
+        """
+        Get the index profile.
+
+        :return: The index profile.
+        :rtype: numpy array, of shape (len(ts1)-windows_size+1,)
+        """
+        return np.copy(self._index_profile)
 
     def get_profiles(self):
         """
         Get the matrix profile and the index profile.
 
         :return: The matrix profile and the index profile.
-        :rtype: numpy arrays, both of shape (len(ts1)-window_size+1,)
+        :rtype: 2 numpy arrays, both of shape (len(ts1)-window_size+1,)
         """
-        return np.copy(self._matrix_profile), np.copy(self._index_profile)
+        return self.get_matrix_profile(), self.get_index_profile()
 
+    @abstractmethod
     def _compute_matrix_profile(self):
         """
         Compute the matrix profile using the method indicated by the class.
-        Raise NotImplementedError in the base class.
 
         :return: None.
         """
-        raise NotImplementedError("Please initialize from one of the STAMP, STOMP or SCRIMP class. " +
-                                  "Do not initialize from the MatrixProfile class directly.")
+        raise NotImplementedError
 
     def _elementwise_min(self, D, idx):
         """
@@ -107,7 +139,6 @@ class MatrixProfile:
         idx = len(self.ts1) - self.window_size
         D = utils.mass(s, self.ts2)
         if self._same_ts:
-            # self._elementwise_min(D[:-1], idx)
             lower_ez_bound = max(0, idx - self.exclusion_zone)
             upper_ez_bound = min(len(self.ts2), idx + self.exclusion_zone) + 1
             D[lower_ez_bound:upper_ez_bound] = np.inf
@@ -134,15 +165,13 @@ class MatrixProfile:
             self._elementwise_min(D, idx)
 
 
-
 class STAMP(MatrixProfile):
     """
     Class for the calculation of matrix profile using STAMP algorithm. See [MP1]_ for more details.
 
-    .. [MP1] Yeh CCM, Zhu Y, Ulanova L, Begum N, Ding Y, Dau HA, et al. "Matrix profile I: All
-       pairs similarity joins for time series: A unifying view that includes motifs, discords and
-       shapelets". *Proc - IEEE Int Conf Data Mining, ICDM. 2017;1317–22*.
-       (http://www.cs.ucr.edu/~eamonn/MatrixProfile.html)
+    .. [MP1] C.C.M. Yeh, Y. Zhu, L. Ulanova, N. Begum, Y. Ding, H.A. Dau, D. Silva, A. Mueen and E. Keogh.
+       "Matrix profile I: All pairs similarity joins for time series: A unifying view that includes
+       motifs, discords and shapelets". IEEE ICDM 2016.
 
     :param ts1: Time series for calculating the matrix profile.
     :type ts1: numpy array
@@ -153,21 +182,97 @@ class STAMP(MatrixProfile):
                                  Must be non-negative. This parameter will be ignored if ts2 is not None.
     :param bool verbose: To be written
     :param float s_size: Ratio of random calculations performed for anytime algorithms. Must be between 0 and 1,
-                         1 means calculate all, and 0 means none. This parameter will be ignored if the algorithm
-                         is not anytime.
+                         1 means calculate all, and 0 means none.
     :raises: ValueError: If the input is invalid.
     """
-    _is_anytime = True
-
     def __init__(self, ts1, ts2=None, window_size=None, exclusion_zone=1/2, verbose=True, s_size=1):
         super().__init__(ts1, ts2, window_size, exclusion_zone, verbose, s_size)
+
+    @property
+    def _is_anytime(self):
+        return True
+
+    @property
+    def _iterator(self):
+        idxes = np.random.permutation(range(len(self.ts2) - self.window_size + 1))[:self.s_length]
+        if self.verbose:
+            _iterator = tqdm(idxes)
+        else:
+            _iterator = idxes
+        return _iterator
 
     def _compute_matrix_profile(self):
         """
         Compute the matrix profile using STAMP.
         """
+        try:
+            for n_iter, idx in enumerate(self._iterator):
+                D = utils.mass(self.ts2[idx: idx+self.window_size], self.ts1)
+                self._elementwise_min(D, idx)
+        except KeyboardInterrupt:
+            if self.verbose:
+                tqdm.write("Calculation interrupted at iteration {}. Approximate result returned.".format(n_iter))
+
+
+class STOMP(MatrixProfile):
+    """
+    Class for the calculation of matrix profile using STOMP algorithm. See [MP2]_ for more details.
+
+    .. [MP2] Y. Zhu, Z. Zimmerman, N.S. Senobari, C.C.M. Yeh, G. Funning, A. Mueen, P. Berisk and E. Keogh.
+       "Matrix Profile II: Exploiting a Novel Algorithm and GPUs to Break the One Hundred Million
+       Barrier for Time Series Motifs and Joins". IEEE ICDM 2016.
+
+    :param ts1: Time series for calculating the matrix profile.
+    :type ts1: numpy array
+    :param ts2: A second time series to compute matrix profile with respect to ts1. If None, ts1 will be used.
+    :type ts2: numpy array
+    :param int window_size: Subsequence length, must be a positive integer less than the length of both ts1 and ts2.
+    :param float exclusion_zone: Exclusion zone, the length of exclusion zone is this number times window_size.
+                                 Must be non-negative. This parameter will be ignored if ts2 is not None.
+    :param bool verbose: To be written
+    :param float s_size: This parameter will be ignored by STOMP since it is not an anytime algorithm.
+    :raises: ValueError: If the input is invalid.
+    """
+    def __init__(self, ts1, ts2=None, window_size=None, exclusion_zone=1/2, verbose=True, s_size=1):
+        super().__init__(ts1, ts2, window_size, exclusion_zone, verbose, s_size)
+
+    @property
+    def _is_anytime(self):
+        return False
+
+    @property
+    def _iterator(self):
+        idxes = range(1, len(self.ts2) - self.window_size + 1)
+        if self.verbose:
+            _iterator = tqdm(idxes)
+        else:
+            _iterator = idxes
+        return _iterator
+
+    def _compute_matrix_profile(self):
+        """
+        Compute the matrix profile using STOMP.
+        """
+        mu_T, sigma_T = utils.rolling_avg_sd(self.ts1, self.window_size)
+        QT = utils.sliding_dot_product(self.ts2[0:self.window_size], self.ts1)
+        if self._same_ts:
+            mu_Q, sigma_Q = mu_T, sigma_T
+            TQ = np.copy(QT)
+        else:
+            mu_Q, sigma_Q = utils.rolling_avg_sd(self.ts2, self.window_size)
+            TQ = utils.sliding_dot_product(self.ts1[0:self.window_size], self.ts2)
+        D = utils.calculate_distance_profile(QT, self.window_size, mu_Q[0], sigma_Q[0], mu_T, sigma_T)
+        if self._same_ts:
+            lower_ez_bound = 0
+            upper_ez_bound = min(len(self.ts2), self.exclusion_zone) + 1
+            D[lower_ez_bound:upper_ez_bound] = np.inf
+        self._matrix_profile = np.copy(D)
+        self._index_profile = np.zeros((len(self.ts1) - self.window_size + 1,))
         for idx in self._iterator:
-            D = utils.mass(self.ts2[idx: idx+self.window_size], self.ts1)
+            QT[1:] = QT[:len(self.ts1)-self.window_size] - self.ts1[:len(self.ts1)-self.window_size] * self.ts2[idx-1] \
+                     + self.ts1[self.window_size:] * self.ts2[idx + self.window_size - 1]
+            QT[0] = TQ[idx]
+            D = utils.calculate_distance_profile(QT, self.window_size, mu_Q[idx], sigma_Q[idx], mu_T, sigma_T)
             self._elementwise_min(D, idx)
 
 

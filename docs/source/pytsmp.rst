@@ -1,13 +1,10 @@
-pytsmp package
-==============
-
-pytsmp.MatrixProfile class
---------------------------
+pytsmp.MatrixProfile
+--------------------
 
 .. autoclass:: pytsmp.pytsmp.MatrixProfile
 
-pytsmp.STAMP class
---------------------------
+pytsmp.STAMP
+------------
 
 .. autoclass:: pytsmp.pytsmp.STAMP
     :members:
@@ -15,8 +12,17 @@ pytsmp.STAMP class
     :undoc-members:
     :show-inheritance:
 
-pytsmp.utils module
--------------------
+pytsmp.STOMP
+------------
+
+.. autoclass:: pytsmp.pytsmp.STOMP
+    :members:
+    :inherited-members:
+    :undoc-members:
+    :show-inheritance:
+
+pytsmp.utils
+------------
 
 .. automodule:: pytsmp.utils
     :members:

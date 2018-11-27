@@ -94,6 +94,31 @@ def sliding_dot_product(Q, T):
     QT = np.fft.irfft(Q_raf * T_af)
     return QT[m-1:n]
 
+
+def calculate_distance_profile(QT, m, mean_Q, sigma_Q, mean_T, sigma_T):
+    """
+    Subroutine for calculating the distance profile of a time series T with respect to a query Q,
+    if the sliding dot product between the time series and the query,
+    the moving average, moving sd of the time series and the mean and sd of the query are known.
+    Note that T and Q are not required in the input.
+
+    :param QT: The sliding dot product of T and Q.
+    :type QT: numpy array
+    :param int m: Length of Q.
+    :param int mean_Q: Mean of Q.
+    :param int sigma_Q: Standard derivation of Q.
+    :param mean_T: The rolling mean (with window size m) of T
+    :type mean_T: numpy array
+    :param sigma_T: The rolling sd (with window size m) of T
+    :type sigma_T: numpy array
+    :return: The distance profile of T with respect to Q.
+    :rtype: numpy array, of shape (len(T)-len(Q)+1,)
+    """
+    # Take max with 0 before the sqaure root to eliminate complex numbers resulted in floating point error.
+    D = np.sqrt(np.maximum(2 * m * (1 - (QT - m * mean_Q * mean_T) / (m * sigma_Q * sigma_T)), 0))
+    return D
+
+
 def mass(Q, T):
     """
     Mueen's algorithm for similarity search (MASS) algorithm. See Table 2 in the Matrix
@@ -118,7 +143,7 @@ def mass(Q, T):
     mean_T, sigma_T = rolling_avg_sd(T, m)
     mean_Q = np.mean(Q)
     sigma_Q = np.std(Q)
-    D = np.sqrt(np.maximum(2 * m * (1 - (QT - m * mean_Q * mean_T) / (m * sigma_Q * sigma_T)), 0))
+    D = calculate_distance_profile(QT, m, mean_Q, sigma_Q, mean_T, sigma_T)
     return D
 
 
