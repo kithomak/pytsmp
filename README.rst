@@ -13,7 +13,7 @@ pytsmp
    :target: https://travis-ci.org/kithomak/pytsmp
    :alt: Latest Travis CI build status
 
-pytsmp is a Python implementation of the matrix profile. More details about matrix profile can be
+``pytsmp`` is a Python implementation of the matrix profile. More details about matrix profile can be
 found in the `UCR Matrix Profile Page <http://www.cs.ucr.edu/~eamonn/MatrixProfile.html>`_
 by the paper authors.
 
@@ -28,7 +28,7 @@ The original implementation (in R) of the paper authors from the UCR group can b
 Installation
 ------------
 
-pytsmp is available via pip.
+``pytsmp`` is available via pip.
 
 .. code:: bash
 
@@ -108,6 +108,10 @@ motifs, discords and shapelets". IEEE ICDM 2016.
 Y. Zhu, Z. Zimmerman, N.S. Senobari, C.C.M. Yeh, G. Funning, A. Mueen, P. Berisk and E. Keogh.
 "Matrix Profile II: Exploiting a Novel Algorithm and GPUs to Break the One Hundred Million
 Barrier for Time Series Motifs and Joins". IEEE ICDM 2016.
+
+
+Y. Zhu, C.C.M. Yeh, Z. Zimmerman, K. Kamgar and E. Keogh.
+"Matrix Proﬁle XI: SCRIMP++: Time Series Motif Discovery at Interactive Speed". IEEE ICDM 2018.
 
 
 .. comment

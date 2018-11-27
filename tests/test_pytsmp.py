@@ -138,6 +138,32 @@ class TestSTAMP:
         # assert np.allclose(ipro, ipro_ans), "STAMP_compute_matrix_profile_data1: " \
         #                                                           "Should compute the index profile correctly."
 
+    def test_STAMP_compute_matrix_profile_data2(self):
+        t = np.loadtxt("./tests/data/candy_production.csv")
+        mpro_ans = np.loadtxt("./tests/data/candy_production_mpro.csv")
+        ipro_ans = np.loadtxt("./tests/data/candy_production_ipro.csv")
+        w = 80
+        mp = pytsmp.STAMP(t, window_size=w, verbose=False)
+        mpro, ipro = mp.get_profiles()
+        assert np.allclose(mpro, mpro_ans), "STAMP_compute_matrix_profile_data2: " \
+                                            "Should compute the matrix profile correctly. " \
+                                            "Max error is {}".format(np.max(np.abs(mpro - mpro_ans)))
+        assert np.allclose(ipro, ipro_ans), "STAMP_compute_matrix_profile_data1: " \
+                                            "Should compute the index profile correctly."
+
+    def test_STAMP_compute_matrix_profile_data3(self):
+        t = np.loadtxt("./tests/data/bitcoin_price.csv")
+        mpro_ans = np.loadtxt("./tests/data/bitcoin_price_mpro.csv")
+        ipro_ans = np.loadtxt("./tests/data/bitcoin_price_ipro.csv")
+        w = 100
+        mp = pytsmp.STAMP(t, window_size=w, verbose=False)
+        mpro, ipro = mp.get_profiles()
+        assert np.allclose(mpro, mpro_ans), "STAMP_compute_matrix_profile_data3: " \
+                                            "Should compute the matrix profile correctly. " \
+                                            "Max error is {}".format(np.max(np.abs(mpro - mpro_ans)))
+        assert np.allclose(ipro, ipro_ans), "STAMP_compute_matrix_profile_data3: " \
+                                            "Should compute the index profile correctly."
+
     def test_STAMP_update_ts1_random_data(self):
         n = np.random.randint(200, 1000)
         m = np.random.randint(200, 1000)
@@ -282,5 +308,31 @@ class TestSTOMP:
                                             "Max error is {}".format(np.max(np.abs(mpro - mpro_ans)))
         # assert np.allclose(ipro, ipro_ans), "STOMP_compute_matrix_profile_data1: " \
         #                                     "Should compute the index profile correctly."
+
+    def test_STOMP_compute_matrix_profile_data2(self):
+        t = np.loadtxt("./tests/data/candy_production.csv")
+        mpro_ans = np.loadtxt("./tests/data/candy_production_mpro.csv")
+        ipro_ans = np.loadtxt("./tests/data/candy_production_ipro.csv")
+        w = 80
+        mp = pytsmp.STOMP(t, window_size=w, verbose=False)
+        mpro, ipro = mp.get_profiles()
+        assert np.allclose(mpro, mpro_ans), "STOMP_compute_matrix_profile_data2: " \
+                                            "Should compute the matrix profile correctly. " \
+                                            "Max error is {}".format(np.max(np.abs(mpro - mpro_ans)))
+        assert np.allclose(ipro, ipro_ans), "STOMP_compute_matrix_profile_data1: " \
+                                            "Should compute the index profile correctly."
+
+    def test_STOMP_compute_matrix_profile_data3(self):
+        t = np.loadtxt("./tests/data/bitcoin_price.csv")
+        mpro_ans = np.loadtxt("./tests/data/bitcoin_price_mpro.csv")
+        ipro_ans = np.loadtxt("./tests/data/bitcoin_price_ipro.csv")
+        w = 100
+        mp = pytsmp.STOMP(t, window_size=w, verbose=False)
+        mpro, ipro = mp.get_profiles()
+        assert np.allclose(mpro, mpro_ans), "STOMP_compute_matrix_profile_data3: " \
+                                            "Should compute the matrix profile correctly. " \
+                                            "Max error is {}".format(np.max(np.abs(mpro - mpro_ans)))
+        assert np.allclose(ipro, ipro_ans), "STOMP_compute_matrix_profile_data3: " \
+                                            "Should compute the index profile correctly."
 
 
