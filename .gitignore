@@ -44,6 +44,9 @@ README.html
 # JetBrain
 .idea
 
+# IPython
+.ipynb_checkpoints
+
 # Others
 .DS_Store
 sandbox.py
