@@ -13,7 +13,7 @@ pytsmp
    :target: https://travis-ci.org/kithomak/pytsmp
    :alt: Latest Travis CI build status
 
-A Python implementation of the matrix profile. More details about matrix profile can be
+pytsmp is a Python implementation of the matrix profile. More details about matrix profile can be
 found in the `UCR Matrix Profile Page <http://www.cs.ucr.edu/~eamonn/MatrixProfile.html>`_
 by the paper authors.
 
@@ -90,7 +90,7 @@ Perform a simple trial run on a random walk with 40000 data points.
    # ipython magic command
    %timeit mp = STAMP(ts, window_size=50, verbose=False)
 
-On my MacBook Pro with 2.2 GHz Intel Core i7, the result is 2min 14s ± 2.17s.
+On my MacBook Pro with 2.2 GHz Intel Core i7, the result is 2min 14s ± 2.17s (over 7 runs, 1 loop each).
 
 
 .. comment

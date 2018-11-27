@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 import numpy as np
-from tqdm import tqdm
+from tqdm.autonotebook import tqdm
 
 from pytsmp import utils
 
@@ -52,7 +52,7 @@ class MatrixProfile(ABC):
 
     @property
     @abstractmethod
-    def _is_anytime(self):
+    def is_anytime(self):
         """
         A property stating whether the algorithm for computing the matrix profile
         in this class is an anytime algorithm.
@@ -189,7 +189,7 @@ class STAMP(MatrixProfile):
         super().__init__(ts1, ts2, window_size, exclusion_zone, verbose, s_size)
 
     @property
-    def _is_anytime(self):
+    def is_anytime(self):
         return True
 
     @property
@@ -237,7 +237,7 @@ class STOMP(MatrixProfile):
         super().__init__(ts1, ts2, window_size, exclusion_zone, verbose, s_size)
 
     @property
-    def _is_anytime(self):
+    def is_anytime(self):
         return False
 
     @property

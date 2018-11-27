@@ -49,6 +49,12 @@ class TestSTAMP:
             mp = pytsmp.STAMP(t, window_size=10, s_size=1.2, verbose=False)
             assert str(excinfo.value) == "s_size must be between 0 and 1."
 
+    def test_STAMP_is_anytime(self):
+        t = np.random.rand(1000)
+        mp = pytsmp.STAMP(t, window_size=10, s_size=1, verbose=False)
+        is_anytime = mp.is_anytime
+        assert is_anytime == True, "STAMP_is_anytime: STAMP is an anytime algorithm."
+
     def test_STAMP_init_check_mutation(self):
         t1 = np.random.rand(100)
         t2 = np.random.rand(100)
@@ -198,6 +204,12 @@ class TestSTAMP:
 
 
 class TestSTOMP:
+    def test_STOMP_is_anytime(self):
+        t = np.random.rand(1000)
+        mp = pytsmp.STOMP(t, window_size=10, s_size=1, verbose=False)
+        is_anytime = mp.is_anytime
+        assert is_anytime == False, "STOMP_is_anytime: STOMP is not an anytime algorithm."
+
     def test_STOMP_get_profiles_check_length(self):
         n = np.random.randint(100, 1000)
         m = np.random.randint(100, 1000)
