@@ -1,6 +1,14 @@
 pytsmp
 ======
 
+.. image:: https://gitlab.com/mcnuggets23/pytsmp/badges/master/pipeline.svg
+       :target: https://gitlab.com/mcnuggets23/pytsmp/commits/master
+       :alt: Latest build status
+
+.. image:: https://gitlab.com/mcnuggets23/pytsmp/badges/master/coverage.svg
+        :target: https://gitlab.com/mcnuggets23/pytsmp/commits/master
+        :alt: Latest coverage status
+
 .. comment
     .. image:: https://img.shields.io/pypi/v/pytsmp.svg
         :target: https://pypi.python.org/pypi/pytsmp
@@ -8,7 +16,7 @@ pytsmp
 
 .. comment
     .. image:: https://codecov.io/gh/kithomak/pytsmp/branch/master/graph/badge.svg
-        :target: https://codecov.io/gh/kithomak/pytsmp/branch/master/
+        :target: https://codecov.io/gh/kithomak/pytsmp/branch/master
         :alt: Latest Codecov status
 
 .. comment
