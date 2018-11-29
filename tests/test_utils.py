@@ -49,6 +49,14 @@ class TestRollingAvgSd:
         assert np.allclose([np.std(t)], rsd), \
             "rolling_avg_sd_sanity2: rolling sd of full window size should equal the series sd"
 
+    def test_rolling_avg_sd_data1(self):
+        t = np.loadtxt("./tests/data/random_walk_data.csv")
+        ra, rsd = utils.rolling_avg_sd(t, 1000)
+        ra_ans = np.loadtxt("./tests/data/random_walk_data_rolling_mean.csv")
+        rsd_ans = np.loadtxt("./tests/data/random_walk_data_rolling_std.csv")
+        assert np.allclose(ra, ra_ans), "rolling_avg_sd_random_data: rolling average should be computed correctly"
+        assert np.allclose(rsd, rsd_ans), "rolling_avg_sd_random_data: rolling sd should be computed correctly"
+
     def test_rolling_avg_sd_random_data(self):
         t = np.random.rand(1000)
         m = np.random.randint(10, 1000)
@@ -111,6 +119,39 @@ class TestSlidingDotProduct:
         ans = helpers.naive_sliding_dot_product(q, t)
         assert len(sdp) == n - m + 1, "sliding_dot_product_random_data: sliding dot product should have correct length"
         assert np.allclose(sdp, ans), "sliding_dot_product_random_data: sliding dot product should be computed correctly"
+
+
+class TestCalculateDistanceProfile:
+    def test_calculate_distance_profile_invalid_QT(self):
+        with pytest.raises(ValueError):
+            qt = np.random.rand(101)
+            rolling_mean = np.random.rand(100)
+            rolling_std = np.random.rand(100)
+            dp = utils.calculate_distance_profile(qt, 10, rolling_mean[0], rolling_std[0], rolling_mean, rolling_std)
+
+    def test_calculate_distance_profile_invalid_rolling_mean(self):
+        with pytest.raises(ValueError):
+            qt = np.random.rand(100)
+            rolling_mean = np.random.rand(101)
+            rolling_std = np.random.rand(100)
+            dp = utils.calculate_distance_profile(qt, 10, rolling_mean[0], rolling_std[0], rolling_mean, rolling_std)
+
+    def test_calculate_distance_profile_invalid_rolling_std(self):
+        with pytest.raises(ValueError):
+            qt = np.random.rand(100)
+            rolling_mean = np.random.rand(100)
+            rolling_std = np.random.rand(101)
+            dp = utils.calculate_distance_profile(qt, 10, rolling_mean[0], rolling_std[0], rolling_mean, rolling_std)
+
+    def test_calculate_distance_profile_data1(self):
+        qt = np.loadtxt("./tests/data/random_walk_data_sdp.csv")
+        rolling_mean = np.loadtxt("./tests/data/random_walk_data_rolling_mean.csv")
+        rolling_std = np.loadtxt("./tests/data/random_walk_data_rolling_std.csv")
+        m = 1000
+        dp = utils.calculate_distance_profile(qt, m, rolling_mean[0], rolling_std[0], rolling_mean, rolling_std)
+        ans = np.loadtxt("./tests/data/random_walk_data_distance_profile.csv")
+        assert len(dp) == len(qt), "mass_data1: result should have correct length"
+        assert np.allclose(dp, ans), "calculate_distance_profile_data1: distance profile should be computer correctly"
 
 
 class TestMASS:

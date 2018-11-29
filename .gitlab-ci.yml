@@ -1,0 +1,14 @@
+stages:
+  - build
+  - test
+  - deploy
+
+job 1:
+  stage: build
+  script: pip install -r requirements.txt -r requirements-dev.txt
+
+job 2:
+  stage: test
+  script: py.test --cov=pytsmp tests/
+
+

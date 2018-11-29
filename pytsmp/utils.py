@@ -1,7 +1,5 @@
 import numpy as np
 
-# from pytsmp import misc
-
 
 def rolling_average(t, window_size):
     """
@@ -100,7 +98,8 @@ def calculate_distance_profile(QT, m, mean_Q, sigma_Q, mean_T, sigma_T):
     Subroutine for calculating the distance profile of a time series T with respect to a query Q,
     if the sliding dot product between the time series and the query,
     the moving average, moving sd of the time series and the mean and sd of the query are known.
-    Note that T and Q are not required in the input.
+    Note that T and Q are not required in the input, and the algorithm will not check if the inputs
+    are really from two series Q, T and are compatible.
 
     :param QT: The sliding dot product of T and Q.
     :type QT: numpy array
@@ -113,7 +112,10 @@ def calculate_distance_profile(QT, m, mean_Q, sigma_Q, mean_T, sigma_T):
     :type sigma_T: numpy array
     :return: The distance profile of T with respect to Q.
     :rtype: numpy array, of shape (len(T)-len(Q)+1,)
+    :raises: ValueError: If len(QT), len(mean_T), len(sigma_T) are not all the same.
     """
+    if len(QT) != len(mean_T) or len(mean_T) != len(sigma_T):
+        raise ValueError("Input dimension mismatch.")
     # Take max with 0 before the sqaure root to eliminate complex numbers resulted in floating point error.
     D = np.sqrt(np.maximum(2 * m * (1 - (QT - m * mean_Q * mean_T) / (m * sigma_Q * sigma_T)), 0))
     return D
