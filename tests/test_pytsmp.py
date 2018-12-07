@@ -181,6 +181,25 @@ class TestSTAMP:
         assert np.allclose(ipro, ipro2), "STAMP_update_ts1_random_data: " \
                                          "update_ts1 should update the index profile properly on random data."
 
+    def test_STAMP_update_ts1_multiple_random_data(self):
+        n = np.random.randint(200, 1000)
+        m = np.random.randint(200, 1000)
+        t1 = np.random.rand(n)
+        t2 = np.random.rand(m)
+        w = np.random.randint(10, min(n, m) // 4)
+        times = np.random.randint(50)
+        mp = pytsmp.STAMP(t1[:-times], t2, window_size=w, verbose=False)
+        for i in range(-times, 0, 1):
+            mp.update_ts1(t1[i])
+        mpro, ipro = mp.get_profiles()
+        mp2 = pytsmp.STAMP(t1, t2, window_size=w, verbose=False)
+        mpro2, ipro2 = mp2.get_profiles()
+        assert np.allclose(mpro, mpro2), "STAMP_update_ts1_multiple_random_data: " \
+                                         "update_ts1 should update the matrix profile multiple times properly on random data. " \
+                                         "Max error is {}".format(np.max(np.abs(mpro - mpro2)))
+        assert np.allclose(ipro, ipro2), "STAMP_update_ts1_random_data: " \
+                                         "update_ts1 should update the index profile multiple times properly on random data."
+
     def test_STAMP_update_ts2_random_data(self):
         n = np.random.randint(200, 1000)
         m = np.random.randint(200, 1000)
@@ -198,6 +217,47 @@ class TestSTAMP:
         assert np.allclose(ipro, ipro2), "STAMP_update_ts2_random_data: " \
                                          "update_ts2 should update the index profile properly on random data."
 
+    def test_STAMP_update_ts2_multiple_random_data(self):
+        n = np.random.randint(200, 1000)
+        m = np.random.randint(200, 1000)
+        t1 = np.random.rand(n)
+        t2 = np.random.rand(m)
+        w = np.random.randint(10, min(n, m) // 4)
+        times = np.random.randint(50)
+        mp = pytsmp.STAMP(t1, t2[:-times], window_size=w, verbose=False)
+        for i in range(-times, 0, 1):
+            mp.update_ts2(t2[i])
+        mpro, ipro = mp.get_profiles()
+        mp2 = pytsmp.STAMP(t1, t2, window_size=w, verbose=False)
+        mpro2, ipro2 = mp2.get_profiles()
+        assert np.allclose(mpro, mpro2), "STAMP_update_ts2_multiple_random_data: " \
+                                         "update_ts2 should update the matrix profile multiple times properly on random data. " \
+                                         "Max error is {}".format(np.max(np.abs(mpro - mpro2)))
+        assert np.allclose(ipro, ipro2), "STAMP_update_ts2_random_data: " \
+                                         "update_ts2 should update the index profile multiple times properly on random data."
+
+    def test_STAMP_update_interleave_random_data(self):
+        n = np.random.randint(200, 1000)
+        m = np.random.randint(200, 1000)
+        t1 = np.random.rand(n)
+        t2 = np.random.rand(m)
+        w = np.random.randint(10, min(n, m) // 4)
+        times = np.random.randint(25)
+        mp = pytsmp.STAMP(t1[:-times], t2[:-times], window_size=w, verbose=False)
+        for i in range(-times, 0, 1):
+            mp.update_ts1(t1[i])
+            mp.update_ts2(t2[i])
+        mpro, ipro = mp.get_profiles()
+        mp2 = pytsmp.STAMP(t1, t2, window_size=w, verbose=False)
+        mpro2, ipro2 = mp2.get_profiles()
+        assert np.allclose(mpro, mpro2), "STAMP_update_interleave_random_data: " \
+                                         "update_ts1 and update_ts2 should update the matrix profile multiple times " \
+                                         "properly on random data. " \
+                                         "Max error is {}".format(np.max(np.abs(mpro - mpro2)))
+        assert np.allclose(ipro, ipro2), "STAMP_update_interleave_random_data: " \
+                                         "update_ts1 and update_ts2 should update the index profile multiple times " \
+                                         "properly on random data."
+
     def test_STAMP_update_ts1_same_data(self):
         n = np.random.randint(200, 1000)
         t = np.random.rand(n)
@@ -213,6 +273,23 @@ class TestSTAMP:
         assert np.allclose(ipro, ipro2), "STAMP_update_ts1_same_data: " \
                                          "update_ts1 should update the index profile properly when ts1 == ts2."
 
+    def test_STAMP_update_ts1_multiple_same_data(self):
+        n = np.random.randint(200, 1000)
+        t = np.random.rand(n)
+        w = np.random.randint(10, n // 4)
+        times = np.random.randint(50)
+        mp = pytsmp.STAMP(t[:-times], window_size=w, verbose=False)
+        for i in range(-times, 0, 1):
+            mp.update_ts1(t[i])
+        mpro, ipro = mp.get_profiles()
+        mp2 = pytsmp.STAMP(t, window_size=w, verbose=False)
+        mpro2, ipro2 = mp2.get_profiles()
+        assert np.allclose(mpro, mpro2), "STAMP_update_ts1_multiple_same_data: " \
+                                         "update_ts1 should update the matrix profile multiple times properly when ts1 == ts2. " \
+                                         "Max error is {}".format(np.max(np.abs(mpro - mpro2)))
+        assert np.allclose(ipro, ipro2), "STAMP_update_ts1_multiple_same_data: " \
+                                         "update_ts1 should update the index profile multiple times properly when ts1 == ts2."
+
     def test_STAMP_update_ts2_same_data(self):
         n = np.random.randint(200, 1000)
         t = np.random.rand(n)
@@ -227,6 +304,45 @@ class TestSTAMP:
                                          "Max error is {}".format(np.max(np.abs(mpro - mpro2)))
         assert np.allclose(ipro, ipro2), "STAMP_update_ts2_same_data: " \
                                          "update_ts2 should update the index profile properly when ts1 == ts2."
+
+    def test_STAMP_update_ts2_multiple_same_data(self):
+        n = np.random.randint(200, 1000)
+        t = np.random.rand(n)
+        w = np.random.randint(10, n // 4)
+        times = np.random.randint(50)
+        mp = pytsmp.STAMP(t[:-times], window_size=w, verbose=False)
+        for i in range(-times, 0, 1):
+            mp.update_ts2(t[i])
+        mpro, ipro = mp.get_profiles()
+        mp2 = pytsmp.STAMP(t, window_size=w, verbose=False)
+        mpro2, ipro2 = mp2.get_profiles()
+        assert np.allclose(mpro, mpro2), "STAMP_update_ts2_multiple_same_data: " \
+                                         "update_ts2 should update the matrix profile multiple times properly when ts1 == ts2. " \
+                                         "Max error is {}".format(np.max(np.abs(mpro - mpro2)))
+        assert np.allclose(ipro, ipro2), "STAMP_update_ts2_multiple_same_data: " \
+                                         "update_ts2 should update the index profile multiple times properly when ts1 == ts2."
+
+    def test_STAMP_update_interleave_same_data(self):
+        n = np.random.randint(200, 1000)
+        t = np.random.rand(n)
+        w = np.random.randint(10, n // 4)
+        times = np.random.randint(50)
+        mp = pytsmp.STAMP(t[:-times], window_size=w, verbose=False)
+        for i in range(-times, 0, 1):
+            if i % 2 == 0:
+                mp.update_ts1(t[i])
+            else:
+                mp.update_ts2(t[i])
+        mpro, ipro = mp.get_profiles()
+        mp2 = pytsmp.STAMP(t, window_size=w, verbose=False)
+        mpro2, ipro2 = mp2.get_profiles()
+        assert np.allclose(mpro, mpro2), "STAMP_update_interleave_same_data: " \
+                                         "update_ts1 and update_ts2 should update the matrix profile multiple times " \
+                                         "properly when ts1 == ts2. " \
+                                         "Max error is {}".format(np.max(np.abs(mpro - mpro2)))
+        assert np.allclose(ipro, ipro2), "STAMP_update_interleave_same_data: " \
+                                         "update_ts1 and update_ts2 should update the index profile multiple times " \
+                                         "properly when ts1 == ts2."
 
 
 class TestSTOMP:

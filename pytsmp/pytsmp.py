@@ -216,7 +216,8 @@ class STAMP(MatrixProfile):
 
 class STOMP(MatrixProfile):
     """
-    Class for the calculation of matrix profile using STOMP algorithm. See [MP2]_ for more details.
+    Class for the calculation of matrix profile using STOMP algorithm. This is faster than STAMP (actually the
+    fastest known algorithm), but is not an anytime algorithm. See [MP2]_ for more details.
 
     .. [MP2] Y. Zhu, Z. Zimmerman, N.S. Senobari, C.C.M. Yeh, G. Funning, A. Mueen, P. Berisk and E. Keogh.
        "Matrix Profile II: Exploiting a Novel Algorithm and GPUs to Break the One Hundred Million

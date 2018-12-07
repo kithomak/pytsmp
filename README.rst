@@ -99,9 +99,30 @@ Perform a simple trial run on a random walk with 40000 data points.
    ts = np.cumsum(np.random.randint(2, size=(40000,)) * 2 - 1)
 
    # ipython magic command
-   %timeit mp = STAMP(ts, window_size=50, verbose=False)
+   %timeit mp = STAMP(ts, window_size=1000, verbose=False)
 
-On my MacBook Pro with 2.2 GHz Intel Core i7, the result is 2min 14s ± 2.17s (over 7 runs, 1 loop each).
+   # and similarly for STOMP and SCRIMP
+
+On my MacBook Pro with 2.2 GHz Intel Core i7, the results are (all over 7 runs, 1 loop each):
+
+.. list-table::
+   :widths: 25 25 25 25
+   :header-rows: 1
+   :align: center
+
+   * - Algorithm
+     - Data Size
+     - Window Size
+     - Elapsed Time
+   * - STAMP
+     - 40000
+     - 1000
+     - 2min 14s ± 392ms
+   * - STOMP
+     - 40000
+     - 1000
+     - 22.1s ± 52.8ms
+
 
 
 .. comment
