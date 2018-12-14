@@ -5,28 +5,29 @@ from pytsmp import utils
 from tests import helpers
 
 
-class TestRollingAverage:
-    def test_rolling_average_window_too_large(self):
+class TestRollingSum:
+    def test_rolling_sum_window_too_large(self):
         with pytest.raises(ValueError):
             t = np.random.rand(500)
-            ans = utils.rolling_average(t, 1000)
+            ans = utils.rolling_sum(t, 1000)
 
-    def test_rolling_average_sanity1(self):
+    def test_rolling_sum_sanity1(self):
         t = np.random.rand(1000)
-        ra = utils.rolling_average(t, 1)
-        assert np.allclose(t, ra), "rolling_average_sanity1: rolling average of window size 1 should equal the series itself"
+        ra = utils.rolling_sum(t, 1)
+        assert np.allclose(t, ra), "rolling_sum_sanity1: rolling sum of window size 1 should equal the series itself"
 
-    def test_rolling_average_sanity2(self):
+    def test_rolling_sum_sanity2(self):
         t = np.random.rand(1000)
-        ra = utils.rolling_average(t, 1000)
-        assert np.allclose([np.mean(t)], ra), "rolling_average_sanity2: rolling average of full window size should equal the series mean"
+        ra = utils.rolling_sum(t, 1000)
+        assert np.allclose([np.sum(t)], ra), "rolling_sum_sanity2: rolling sum of full window size should equal the series sum"
 
-    def test_rolling_average_random_data(self):
+    def test_rolling_sum_random_data(self):
         t = np.random.rand(1000)
         m = np.random.randint(10, 1000)
-        ra = utils.rolling_average(t, m)
-        ans = np.array([np.mean(t[i:i+m]) for i in range(1000 - m + 1)])
-        assert np.allclose(ra, ans), "rolling_average_random_data: rolling average should be computed correctly"
+        ra = utils.rolling_sum(t, m)
+        ans = np.array([np.sum(t[i:i+m]) for i in range(1000 - m + 1)])
+        assert len(ra) == 1000 - m + 1, "rolling_sum_random_data: rolling sum should have correct length"
+        assert np.allclose(ra, ans), "rolling_sum_random_data: rolling sum should be computed correctly"
 
 
 class TestRollingAvgSd:
@@ -38,14 +39,14 @@ class TestRollingAvgSd:
     def test_rolling_avg_sd_sanity1(self):
         t = np.random.rand(1000)
         ra, rsd = utils.rolling_avg_sd(t, 1)
-        assert np.allclose(t, ra), "rolling_avg_sd_sanity1: rolling average of window size 1 should equal the series itself"
+        assert np.allclose(t, ra), "rolling_avg_sd_sanity1: rolling sum of window size 1 should equal the series itself"
         assert np.max(rsd) < 1e-5, \
             "rolling_avg_sd_sanity1: rolling sd of window size 1 should be all zero"
 
     def test_rolling_avg_sd_sanity2(self):
         t = np.random.rand(1000)
         ra, rsd = utils.rolling_avg_sd(t, 1000)
-        assert np.allclose([np.mean(t)], ra), "rolling_avg_sd_sanity2: rolling average of full window size should equal the series mean"
+        assert np.allclose([np.mean(t)], ra), "rolling_avg_sd_sanity2: rolling sum of full window size should equal the series mean"
         assert np.allclose([np.std(t)], rsd), \
             "rolling_avg_sd_sanity2: rolling sd of full window size should equal the series sd"
 
@@ -54,7 +55,7 @@ class TestRollingAvgSd:
         ra, rsd = utils.rolling_avg_sd(t, 1000)
         ra_ans = np.loadtxt("./tests/data/random_walk_data_rolling_mean.csv")
         rsd_ans = np.loadtxt("./tests/data/random_walk_data_rolling_std.csv")
-        assert np.allclose(ra, ra_ans), "rolling_avg_sd_random_data: rolling average should be computed correctly"
+        assert np.allclose(ra, ra_ans), "rolling_avg_sd_random_data: rolling sum should be computed correctly"
         assert np.allclose(rsd, rsd_ans), "rolling_avg_sd_random_data: rolling sd should be computed correctly"
 
     def test_rolling_avg_sd_random_data(self):
@@ -63,7 +64,7 @@ class TestRollingAvgSd:
         ra, rsd = utils.rolling_avg_sd(t, m)
         naive_ra = np.array([np.mean(t[i:i+m]) for i in range(1000 - m + 1)])
         naive_rsd = np.array([np.std(t[i:i+m]) for i in range(1000 - m + 1)])
-        assert np.allclose(ra, naive_ra), "rolling_avg_sd_random_data: rolling average should be computed correctly"
+        assert np.allclose(ra, naive_ra), "rolling_avg_sd_random_data: rolling sum should be computed correctly"
         assert np.allclose(rsd, naive_rsd), "rolling_avg_sd_random_data: rolling sd should be computed correctly"
 
 

@@ -18,7 +18,8 @@ class MatrixProfile(ABC):
         :param ts2: A second time series to compute matrix profile with respect to ts1. If None, ts1 will be used.
         :type ts2: numpy array
         :param int window_size: Subsequence length, must be a positive integer less than the length of both ts1 and ts2
-        :param float exclusion_zone: Exclusion zone, the length of exclusion zone is this number times window_size.
+        :param float exclusion_zone: Exclusion zone, the length of exclusion zone is this number times window_size,
+                                     centered at the point of interest.
                                      Must be non-negative. This parameter will be ignored if ts2 is not None.
         :param bool verbose: To be written
         :param float s_size: Ratio of random calculations performed for anytime algorithms. Must be between 0 and 1,
@@ -40,7 +41,6 @@ class MatrixProfile(ABC):
         self.verbose = bool(verbose)
         if 0 < s_size <= 1:
             self.s_size = s_size
-            self.s_length = round(s_size * (len(self.ts2) - self.window_size + 1) + 1e-5)
         else:
             raise ValueError("s_size must be between 0 and 1.")
 
@@ -178,7 +178,8 @@ class STAMP(MatrixProfile):
     :param ts2: A second time series to compute matrix profile with respect to ts1. If None, ts1 will be used.
     :type ts2: numpy array
     :param int window_size: Subsequence length, must be a positive integer less than the length of both ts1 and ts2.
-    :param float exclusion_zone: Exclusion zone, the length of exclusion zone is this number times window_size.
+    :param float exclusion_zone: Exclusion zone, the length of exclusion zone is this number times window_size,
+                                 centered at the point of interest.
                                  Must be non-negative. This parameter will be ignored if ts2 is not None.
     :param bool verbose: To be written
     :param float s_size: Ratio of random calculations performed for anytime algorithms. Must be between 0 and 1,
@@ -194,7 +195,8 @@ class STAMP(MatrixProfile):
 
     @property
     def _iterator(self):
-        idxes = np.random.permutation(range(len(self.ts2) - self.window_size + 1))[:self.s_length]
+        idxes = np.random.permutation(range(len(self.ts2) - self.window_size + 1))
+        idxes = idxes[:round(self.s_size * len(idxes) + 1e-5)]
         if self.verbose:
             _iterator = tqdm(idxes)
         else:
@@ -228,7 +230,8 @@ class STOMP(MatrixProfile):
     :param ts2: A second time series to compute matrix profile with respect to ts1. If None, ts1 will be used.
     :type ts2: numpy array
     :param int window_size: Subsequence length, must be a positive integer less than the length of both ts1 and ts2.
-    :param float exclusion_zone: Exclusion zone, the length of exclusion zone is this number times window_size.
+    :param float exclusion_zone: Exclusion zone, the length of exclusion zone is this number times window_size,
+                                 centered at the point of interest.
                                  Must be non-negative. This parameter will be ignored if ts2 is not None.
     :param bool verbose: To be written
     :param float s_size: This parameter will be ignored by STOMP since it is not an anytime algorithm.
@@ -255,13 +258,13 @@ class STOMP(MatrixProfile):
         Compute the matrix profile using STOMP.
         """
         mu_T, sigma_T = utils.rolling_avg_sd(self.ts1, self.window_size)
-        QT = utils.sliding_dot_product(self.ts2[0:self.window_size], self.ts1)
+        QT = utils.sliding_dot_product(self.ts2[:self.window_size], self.ts1)
         if self._same_ts:
             mu_Q, sigma_Q = mu_T, sigma_T
             TQ = np.copy(QT)
         else:
             mu_Q, sigma_Q = utils.rolling_avg_sd(self.ts2, self.window_size)
-            TQ = utils.sliding_dot_product(self.ts1[0:self.window_size], self.ts2)
+            TQ = utils.sliding_dot_product(self.ts1[:self.window_size], self.ts2)
         D = utils.calculate_distance_profile(QT, self.window_size, mu_Q[0], sigma_Q[0], mu_T, sigma_T)
         if self._same_ts:
             lower_ez_bound = 0
@@ -275,5 +278,86 @@ class STOMP(MatrixProfile):
             QT[0] = TQ[idx]
             D = utils.calculate_distance_profile(QT, self.window_size, mu_Q[idx], sigma_Q[idx], mu_T, sigma_T)
             self._elementwise_min(D, idx)
+
+
+class SCRIMP(MatrixProfile):
+    """
+    Class for the calculation of matrix profile using SCRIMP algorithm. This is faster than STAMP (slightly slower
+    than STOMP), and is also an anytime algorithm. See [MP3]_ for more details.
+
+    .. [MP3] Y. Zhu, C.C.M. Yeh, Z. Zimmerman, K. Kamgar and E. Keogh.
+       "Matrix Proﬁle XI: SCRIMP++: Time Series Motif Discovery at Interactive Speed". IEEE ICDM 2018.
+
+    :param ts1: Time series for calculating the matrix profile.
+    :type ts1: numpy array
+    :param ts2: A second time series to compute matrix profile with respect to ts1. If None, ts1 will be used.
+    :type ts2: numpy array
+    :param int window_size: Subsequence length, must be a positive integer less than the length of both ts1 and ts2.
+    :param float exclusion_zone: Exclusion zone, the length of exclusion zone is this number times window_size,
+                                 centered at the point of interest.
+                                 Must be non-negative. This parameter will be ignored if ts2 is not None.
+    :param bool verbose: To be written
+    :param float s_size: This parameter will be ignored by STOMP since it is not an anytime algorithm.
+    :raises: ValueError: If the input is invalid.
+    """
+    def __init__(self, ts1, ts2=None, window_size=None, exclusion_zone=1/2, verbose=True, s_size=1):
+        super().__init__(ts1, ts2, window_size, exclusion_zone, verbose, s_size)
+
+    @property
+    def is_anytime(self):
+        return True
+
+    @property
+    def _iterator(self):
+        if self._same_ts:
+            idxes = np.random.permutation(range(self.exclusion_zone + 1,
+                                                len(self.ts2) - self.window_size + 1))
+        else:
+            idxes = np.random.permutation(range(-len(self.ts1) + self.window_size,
+                                                len(self.ts2) - self.window_size + 1))
+            idxes = range(-len(self.ts1) + self.window_size,
+                                                len(self.ts2) - self.window_size + 1)
+        idxes = idxes[:round(self.s_size * len(idxes) + 1e-5)]
+        if self.verbose:
+            _iterator = tqdm(idxes)
+        else:
+            _iterator = idxes
+        return _iterator
+
+    def _compute_matrix_profile(self):
+        """
+        Compute the matrix profile using SCRIMP.
+        """
+        n1 = len(self.ts1)
+        n2 = len(self.ts2)
+        mu_T, sigma_T = utils.rolling_avg_sd(self.ts1, self.window_size)
+        if self._same_ts:
+            mu_Q, sigma_Q = mu_T, sigma_T
+        else:
+            mu_Q, sigma_Q = utils.rolling_avg_sd(self.ts2, self.window_size)
+        for k in self._iterator:
+            if k >= 0:
+                # compute diagonals starting from a slot in first column
+                q = self.ts2[k:k+n1] * self.ts1[:n2-k]
+                q = utils.rolling_sum(q, self.window_size)
+                D = utils.calculate_distance_profile(q, self.window_size, mu_Q[k:k+len(q)], sigma_Q[k:k+len(q)],
+                                                     mu_T[:len(q)], sigma_T[:len(q)])
+                self._index_profile[:len(q)] = np.where(D < self._matrix_profile[:len(q)],
+                                                np.arange(k, k + len(q)), self._index_profile[:len(q)])
+                self._matrix_profile[:len(q)] = np.minimum(D, self._matrix_profile[:len(q)])
+                if self._same_ts:
+                    self._index_profile[k:k+len(q)] = np.where(D < self._matrix_profile[k:k+len(q)],
+                                                np.arange(len(q)), self._index_profile[k:k+len(q)])
+                    self._matrix_profile[k:k+len(q)] = np.minimum(D, self._matrix_profile[k:k+len(q)])
+            else:
+                # compute diagonals starting from a slot in first row
+                k = -k
+                q = self.ts2[:n1-k] * self.ts1[k:k+n2]
+                q = utils.rolling_sum(q, self.window_size)
+                D = utils.calculate_distance_profile(q, self.window_size, mu_Q[:len(q)], sigma_Q[:len(q)],
+                                                     mu_T[k:k+len(q)], sigma_T[k:k+len(q)])
+                self._index_profile[k:k+len(q)] = np.where(D < self._matrix_profile[k:k+len(q)],
+                                                        np.arange(len(q)), self._index_profile[k:k+len(q)])
+                self._matrix_profile[k:k+len(q)] = np.minimum(D, self._matrix_profile[k:k+len(q)])
 
 

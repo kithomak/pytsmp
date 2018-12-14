@@ -1,9 +1,9 @@
 import numpy as np
 
 
-def rolling_average(t, window_size):
+def rolling_sum(t, window_size):
     """
-    Compute rolling average of a given time series t, with given window size. Raise ValueError
+    Compute rolling sum of a given time series t, with given window size. Raise ValueError
     if the window_size is larger than the length of t.
 
     Note: This algorithm is not numerically stable for calculating the rolling statistics
@@ -13,13 +13,13 @@ def rolling_average(t, window_size):
     :type t: numpy array
     :param window_size: Window size
     :type window_size: int
-    :return: The rolling average
+    :return: The rolling sum
     :rtype: numpy array, of shape (len(t) - window_size + 1,)
     :raises: ValueError: If len(T) < window_size.
     """
     if len(t) < window_size:
         raise ValueError("Window size should be smaller than the length of time series.")
-    cumsum = np.cumsum(np.insert(t, 0, 0) / window_size)
+    cumsum = np.cumsum(np.insert(t, 0, 0))
     return cumsum[window_size:] - cumsum[:-window_size]
 
 
@@ -104,8 +104,10 @@ def calculate_distance_profile(QT, m, mean_Q, sigma_Q, mean_T, sigma_T):
     :param QT: The sliding dot product of T and Q.
     :type QT: numpy array
     :param int m: Length of Q.
-    :param int mean_Q: Mean of Q.
-    :param int sigma_Q: Standard derivation of Q.
+    :param mean_Q: Mean of Q.
+    :type mean_Q: numpy array or int
+    :param sigma_Q: Standard derivation of Q.
+    :type sigma_Q: numpy array or int
     :param mean_T: The rolling mean (with window size m) of T
     :type mean_T: numpy array
     :param sigma_T: The rolling sd (with window size m) of T
@@ -114,7 +116,8 @@ def calculate_distance_profile(QT, m, mean_Q, sigma_Q, mean_T, sigma_T):
     :rtype: numpy array, of shape (len(T)-len(Q)+1,)
     :raises: ValueError: If len(QT), len(mean_T), len(sigma_T) are not all the same.
     """
-    if len(QT) != len(mean_T) or len(mean_T) != len(sigma_T):
+    if len(QT) != len(mean_T) or len(mean_T) != len(sigma_T) or ((type(mean_Q) == np.ndarray or
+                    type(sigma_Q) == np.ndarray) and (len(mean_Q) != len(sigma_Q) or len(mean_Q) != len(mean_T))):
         raise ValueError("Input dimension mismatch.")
     # Take max with 0 before the sqaure root to eliminate complex numbers resulted in floating point error.
     D = np.sqrt(np.maximum(2 * m * (1 - (QT - m * mean_Q * mean_T) / (m * sigma_Q * sigma_T)), 0))
