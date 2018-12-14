@@ -328,36 +328,40 @@ class SCRIMP(MatrixProfile):
         """
         Compute the matrix profile using SCRIMP.
         """
-        n1 = len(self.ts1)
-        n2 = len(self.ts2)
-        mu_T, sigma_T = utils.rolling_avg_sd(self.ts1, self.window_size)
-        if self._same_ts:
-            mu_Q, sigma_Q = mu_T, sigma_T
-        else:
-            mu_Q, sigma_Q = utils.rolling_avg_sd(self.ts2, self.window_size)
-        for k in self._iterator:
-            if k >= 0:
-                # compute diagonals starting from a slot in first column
-                q = self.ts2[k:k+n1] * self.ts1[:n2-k]
-                q = utils.rolling_sum(q, self.window_size)
-                D = utils.calculate_distance_profile(q, self.window_size, mu_Q[k:k+len(q)], sigma_Q[k:k+len(q)],
-                                                     mu_T[:len(q)], sigma_T[:len(q)])
-                self._index_profile[:len(q)] = np.where(D < self._matrix_profile[:len(q)],
-                                                np.arange(k, k + len(q)), self._index_profile[:len(q)])
-                self._matrix_profile[:len(q)] = np.minimum(D, self._matrix_profile[:len(q)])
-                if self._same_ts:
-                    self._index_profile[k:k+len(q)] = np.where(D < self._matrix_profile[k:k+len(q)],
-                                                np.arange(len(q)), self._index_profile[k:k+len(q)])
-                    self._matrix_profile[k:k+len(q)] = np.minimum(D, self._matrix_profile[k:k+len(q)])
+        try:
+            n1 = len(self.ts1)
+            n2 = len(self.ts2)
+            mu_T, sigma_T = utils.rolling_avg_sd(self.ts1, self.window_size)
+            if self._same_ts:
+                mu_Q, sigma_Q = mu_T, sigma_T
             else:
-                # compute diagonals starting from a slot in first row
-                k = -k
-                q = self.ts2[:n1-k] * self.ts1[k:k+n2]
-                q = utils.rolling_sum(q, self.window_size)
-                D = utils.calculate_distance_profile(q, self.window_size, mu_Q[:len(q)], sigma_Q[:len(q)],
-                                                     mu_T[k:k+len(q)], sigma_T[k:k+len(q)])
-                self._index_profile[k:k+len(q)] = np.where(D < self._matrix_profile[k:k+len(q)],
-                                                        np.arange(len(q)), self._index_profile[k:k+len(q)])
-                self._matrix_profile[k:k+len(q)] = np.minimum(D, self._matrix_profile[k:k+len(q)])
+                mu_Q, sigma_Q = utils.rolling_avg_sd(self.ts2, self.window_size)
+            for n_iter, k in enumerate(self._iterator):
+                if k >= 0:
+                    # compute diagonals starting from a slot in first column
+                    q = self.ts2[k:k+n1] * self.ts1[:n2-k]
+                    q = utils.rolling_sum(q, self.window_size)
+                    D = utils.calculate_distance_profile(q, self.window_size, mu_Q[k:k+len(q)], sigma_Q[k:k+len(q)],
+                                                         mu_T[:len(q)], sigma_T[:len(q)])
+                    self._index_profile[:len(q)] = np.where(D < self._matrix_profile[:len(q)],
+                                                    np.arange(k, k + len(q)), self._index_profile[:len(q)])
+                    self._matrix_profile[:len(q)] = np.minimum(D, self._matrix_profile[:len(q)])
+                    if self._same_ts:
+                        self._index_profile[k:k+len(q)] = np.where(D < self._matrix_profile[k:k+len(q)],
+                                                    np.arange(len(q)), self._index_profile[k:k+len(q)])
+                        self._matrix_profile[k:k+len(q)] = np.minimum(D, self._matrix_profile[k:k+len(q)])
+                else:
+                    # compute diagonals starting from a slot in first row
+                    k = -k
+                    q = self.ts2[:n1-k] * self.ts1[k:k+n2]
+                    q = utils.rolling_sum(q, self.window_size)
+                    D = utils.calculate_distance_profile(q, self.window_size, mu_Q[:len(q)], sigma_Q[:len(q)],
+                                                         mu_T[k:k+len(q)], sigma_T[k:k+len(q)])
+                    self._index_profile[k:k+len(q)] = np.where(D < self._matrix_profile[k:k+len(q)],
+                                                            np.arange(len(q)), self._index_profile[k:k+len(q)])
+                    self._matrix_profile[k:k+len(q)] = np.minimum(D, self._matrix_profile[k:k+len(q)])
+        except KeyboardInterrupt:
+            if self.verbose:
+                tqdm.write("Calculation interrupted at iteration {}. Approximate result returned.".format(n_iter))
 
 
