@@ -315,8 +315,6 @@ class SCRIMP(MatrixProfile):
         else:
             idxes = np.random.permutation(range(-len(self.ts1) + self.window_size,
                                                 len(self.ts2) - self.window_size + 1))
-            idxes = range(-len(self.ts1) + self.window_size,
-                                                len(self.ts2) - self.window_size + 1)
         idxes = idxes[:round(self.s_size * len(idxes) + 1e-5)]
         if self.verbose:
             _iterator = tqdm(idxes)

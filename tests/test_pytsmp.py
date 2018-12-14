@@ -187,7 +187,7 @@ class TestSTAMP:
         t1 = np.random.rand(n)
         t2 = np.random.rand(m)
         w = np.random.randint(10, min(n, m) // 4)
-        times = np.random.randint(50)
+        times = np.random.randint(5, 50)
         mp = pytsmp.STAMP(t1[:-times], t2, window_size=w, verbose=False)
         for i in range(-times, 0, 1):
             mp.update_ts1(t1[i])
@@ -223,7 +223,7 @@ class TestSTAMP:
         t1 = np.random.rand(n)
         t2 = np.random.rand(m)
         w = np.random.randint(10, min(n, m) // 4)
-        times = np.random.randint(50)
+        times = np.random.randint(5, 50)
         mp = pytsmp.STAMP(t1, t2[:-times], window_size=w, verbose=False)
         for i in range(-times, 0, 1):
             mp.update_ts2(t2[i])
@@ -242,7 +242,7 @@ class TestSTAMP:
         t1 = np.random.rand(n)
         t2 = np.random.rand(m)
         w = np.random.randint(10, min(n, m) // 4)
-        times = np.random.randint(25)
+        times = np.random.randint(5, 25)
         mp = pytsmp.STAMP(t1[:-times], t2[:-times], window_size=w, verbose=False)
         for i in range(-times, 0, 1):
             mp.update_ts1(t1[i])
@@ -277,7 +277,7 @@ class TestSTAMP:
         n = np.random.randint(200, 1000)
         t = np.random.rand(n)
         w = np.random.randint(10, n // 4)
-        times = np.random.randint(50)
+        times = np.random.randint(5, 50)
         mp = pytsmp.STAMP(t[:-times], window_size=w, verbose=False)
         for i in range(-times, 0, 1):
             mp.update_ts1(t[i])
@@ -309,7 +309,7 @@ class TestSTAMP:
         n = np.random.randint(200, 1000)
         t = np.random.rand(n)
         w = np.random.randint(10, n // 4)
-        times = np.random.randint(50)
+        times = np.random.randint(5, 50)
         mp = pytsmp.STAMP(t[:-times], window_size=w, verbose=False)
         for i in range(-times, 0, 1):
             mp.update_ts2(t[i])
@@ -326,7 +326,7 @@ class TestSTAMP:
         n = np.random.randint(200, 1000)
         t = np.random.rand(n)
         w = np.random.randint(10, n // 4)
-        times = np.random.randint(25)
+        times = np.random.randint(5, 25)
         mp = pytsmp.STAMP(t[:-times], window_size=w, verbose=False)
         for i in range(-times, 0, 1):
             if i % 2 == 0:

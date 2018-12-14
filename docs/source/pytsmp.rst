@@ -21,6 +21,15 @@ pytsmp.STOMP
     :undoc-members:
     :show-inheritance:
 
+pytsmp.SCRIMP
+-------------
+
+.. autoclass:: pytsmp.pytsmp.SCRIMP
+    :members:
+    :inherited-members:
+    :undoc-members:
+    :show-inheritance:
+
 pytsmp.utils
 ------------
 
