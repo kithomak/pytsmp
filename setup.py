@@ -28,8 +28,8 @@ setup(
     packages=find_packages(exclude=('tests',)),
 
     install_requires=[
-        "numpy",
-        "tqdm"
+        "numpy>=1.13.0",
+        "tqdm>=4.25.0"
     ],
 
     classifiers=[
