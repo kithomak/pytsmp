@@ -30,6 +30,15 @@ pytsmp.SCRIMP
     :undoc-members:
     :show-inheritance:
 
+pytsmp.PreSCRIMP
+----------------
+
+.. autoclass:: pytsmp.pytsmp.PreSCRIMP
+    :members:
+    :inherited-members:
+    :undoc-members:
+    :show-inheritance:
+
 pytsmp.utils
 ------------
 
