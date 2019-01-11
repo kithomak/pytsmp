@@ -21,7 +21,7 @@ class MatrixProfile(ABC):
         :param float exclusion_zone: Exclusion zone, the length of exclusion zone is this number times window_size,
                                      centered at the point of interest.
                                      Must be non-negative. This parameter will be ignored if ts2 is not None.
-        :param bool verbose: To be written
+        :param bool verbose: Whether to display progress or not.
         :param float s_size: Ratio of random calculations performed for anytime algorithms. Must be between 0 and 1,
                              1 means calculate all, and 0 means none. This parameter will be ignored if the algorithm
                              is not anytime.
@@ -181,7 +181,7 @@ class STAMP(MatrixProfile):
     :param float exclusion_zone: Exclusion zone, the length of exclusion zone is this number times window_size,
                                  centered at the point of interest.
                                  Must be non-negative. This parameter will be ignored if ts2 is not None.
-    :param bool verbose: To be written
+    :param bool verbose: Whether to display progress or not.
     :param float s_size: Ratio of random calculations performed for anytime algorithms. Must be between 0 and 1,
                          1 means calculate all, and 0 means none.
     :raises: ValueError: If the input is invalid.
@@ -233,7 +233,7 @@ class STOMP(MatrixProfile):
     :param float exclusion_zone: Exclusion zone, the length of exclusion zone is this number times window_size,
                                  centered at the point of interest.
                                  Must be non-negative. This parameter will be ignored if ts2 is not None.
-    :param bool verbose: To be written
+    :param bool verbose: Whether to display progress or not.
     :param float s_size: This parameter will be ignored by STOMP since it is not an anytime algorithm.
     :raises: ValueError: If the input is invalid.
     """
@@ -296,7 +296,7 @@ class SCRIMP(MatrixProfile):
     :param float exclusion_zone: Exclusion zone, the length of exclusion zone is this number times window_size,
                                  centered at the point of interest.
                                  Must be non-negative. This parameter will be ignored if ts2 is not None.
-    :param bool verbose: To be written
+    :param bool verbose: Whether to display progress or not.
     :param float s_size: This parameter will be ignored by STOMP since it is not an anytime algorithm.
     :raises: ValueError: If the input is invalid.
     """
@@ -358,6 +358,80 @@ class SCRIMP(MatrixProfile):
                     self._index_profile[k:k+len(q)] = np.where(D < self._matrix_profile[k:k+len(q)],
                                                             np.arange(len(q)), self._index_profile[k:k+len(q)])
                     self._matrix_profile[k:k+len(q)] = np.minimum(D, self._matrix_profile[k:k+len(q)])
+        except KeyboardInterrupt:
+            if self.verbose:
+                tqdm.write("Calculation interrupted at iteration {}. Approximate result returned.".format(n_iter))
+
+
+class PreSCRIMP(MatrixProfile):
+    """
+    Class for the calculation of matrix profile using PreSCRIMP algorithm. This is a very fast *approximate*
+    anytime algorithm. See [MP3]_ for more details.
+
+    .. [MP3] Y. Zhu, C.C.M. Yeh, Z. Zimmerman, K. Kamgar and E. Keogh.
+       "Matrix Proﬁle XI: SCRIMP++: Time Series Motif Discovery at Interactive Speed". IEEE ICDM 2018.
+
+    :param ts1: Time series for calculating the matrix profile.
+    :type ts1: numpy array
+    :param ts2: A second time series to compute matrix profile with respect to ts1. If None, ts1 will be used.
+    :type ts2: numpy array
+    :param int window_size: Subsequence length, must be a positive integer less than the length of both ts1 and ts2.
+    :param float exclusion_zone: Exclusion zone, the length of exclusion zone is this number times window_size,
+                                 centered at the point of interest.
+                                 Must be non-negative. This parameter will be ignored if ts2 is not None.
+    :param bool verbose: Whether to display progress or not.
+    :param float s_size: Ratio of random calculations performed for anytime algorithms. Must be between 0 and 1,
+                         1 means calculate all, and 0 means none.
+    :param sample_interval: Sample interval in the PreSCRIMP algorithm. The sample interval is
+                            this number times window_size. Must be positive. Defaults to 1/4.
+    :raises: ValueError: If the input is invalid.
+    """
+    def __init__(self, ts1, ts2=None, window_size=None, exclusion_zone=1/2, verbose=True, s_size=1, sample_interval=1/4):
+        self.si = sample_interval
+        self.sample_interval = round(window_size * sample_interval + 1e-5)
+        super().__init__(ts1, ts2, window_size, exclusion_zone, verbose, s_size)
+
+    @property
+    def is_anytime(self):
+        return True
+
+    @property
+    def _iterator(self):
+        idxes = np.random.permutation(range(0, len(self.ts2) - self.window_size + 1, self.sample_interval))
+        idxes = idxes[:round(self.s_size * len(idxes) + 1e-5)]
+        if self.verbose:
+            _iterator = tqdm(idxes)
+        else:
+            _iterator = idxes
+        return _iterator
+
+    def _compute_matrix_profile(self):
+        """
+        Compute the matrix profile using PreSCRIMP.
+        """
+        try:
+            n1 = len(self.ts1)
+            n2 = len(self.ts2)
+            mu_T, sigma_T = utils.rolling_avg_sd(self.ts1, self.window_size)
+            if self._same_ts:
+                mu_Q, sigma_Q = mu_T, sigma_T
+            else:
+                mu_Q, sigma_Q = utils.rolling_avg_sd(self.ts2, self.window_size)
+            for n_iter, idx in enumerate(self._iterator):
+                D = utils.mass(self.ts2[idx: idx+self.window_size], self.ts1)
+                self._elementwise_min(D, idx)
+                # compute diagonals starting from a slot in first column
+                # q = self.ts2[k:k + n1] * self.ts1[:n2 - k]
+                # q = utils.rolling_sum(q, self.window_size)
+                # D = utils.calculate_distance_profile(q, self.window_size, mu_Q[k:k + len(q)], sigma_Q[k:k + len(q)],
+                #                                      mu_T[:len(q)], sigma_T[:len(q)])
+                # self._index_profile[:len(q)] = np.where(D < self._matrix_profile[:len(q)],
+                #                                         np.arange(k, k + len(q)), self._index_profile[:len(q)])
+                # self._matrix_profile[:len(q)] = np.minimum(D, self._matrix_profile[:len(q)])
+                # if self._same_ts:
+                #     self._index_profile[k:k + len(q)] = np.where(D < self._matrix_profile[k:k + len(q)],
+                #                                                  np.arange(len(q)), self._index_profile[k:k + len(q)])
+                #     self._matrix_profile[k:k + len(q)] = np.minimum(D, self._matrix_profile[k:k + len(q)])
         except KeyboardInterrupt:
             if self.verbose:
                 tqdm.write("Calculation interrupted at iteration {}. Approximate result returned.".format(n_iter))
