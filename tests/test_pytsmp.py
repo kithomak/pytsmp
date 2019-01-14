@@ -559,3 +559,115 @@ class TestSCRIMP:
                                             "Should compute the index profile correctly."
 
 
+class TestPreSCRIMP:
+    def test_PreSCRIMP_is_anytime(self):
+        t = np.random.rand(1000)
+        mp = pytsmp.PreSCRIMP(t, window_size=10, s_size=1, verbose=False)
+        is_anytime = mp.is_anytime
+        assert is_anytime == True, "PreSCRIMP_is_anytime: PreSCRIMP should be an anytime algorithm."
+
+    def test_PreSCRIMP_get_profiles_check_length(self):
+        n = np.random.randint(100, 1000)
+        m = np.random.randint(100, 1000)
+        t1 = np.random.rand(n)
+        t2 = np.random.rand(m)
+        w = np.random.randint(10, min(n, m))
+        mp = pytsmp.PreSCRIMP(t1, t2, window_size=w, verbose=False)
+        mpro, ipro = mp.get_profiles()
+        assert len(mpro) == n - w + 1, "PreSCRIMP_get_profile_check_length: Matrix profile should have correct length"
+        assert len(ipro) == n - w + 1, "PreSCRIMP_get_profile_check_length: Index profile should have correct length"
+
+    def test_PreSCRIMP_get_profiles_check_mutation(self):
+        t = np.random.rand(1000)
+        w = 10
+        mp = pytsmp.PreSCRIMP(t, window_size=w, verbose=False)
+        mpro, ipro = mp.get_profiles()
+        mpro[0] = -1
+        ipro[0] = -1
+        mpro2, ipro2 = mp.get_profiles()
+        assert mpro[0] != mpro2[0], "PreSCRIMP_get_profile_check_mutation: " \
+                                    "Get profile should return a copy of the matrix profile, not the internal one."
+        assert ipro[0] != ipro2[0], "PreSCRIMP_get_profile_check_mutation: " \
+                                    "Get profile should return a copy of the index profile, not the internal one."
+
+    def test_PreSCRIMP_compute_matrix_profile_sanity(self):
+        t = np.random.rand(1000)
+        w = 10
+        mp = pytsmp.PreSCRIMP(t, t, window_size=w, verbose=False)
+        mpro, ipro = mp.get_profiles()
+        assert np.allclose(mpro, np.zeros(len(t) - w + 1), atol=1e-5), "PreSCRIMP_compute_matrix_profile_sanity: " \
+                                                        "Should compute the matrix profile correctly in the trivial case."
+        assert np.array_equal(ipro, np.arange(len(t) - w + 1)), "PreSCRIMP_compute_matrix_profile_sanity: " \
+                                                        "Should compute the index profile correctly in the trivial case."
+
+    @pytest.mark.skip(reason="Randomized tests on approximate algorithms do not seem a correct thing to do.")
+    def test_PreSCRIMP_compute_matrix_profile_same_random_data(self):
+        n = np.random.randint(100, 200)  # anything larger will be too time-consuming
+        t = np.random.rand(n)
+        w = np.random.randint(10, n // 4)
+        mp = pytsmp.PreSCRIMP(t, window_size=w, verbose=False)
+        mpro, ipro = mp.get_profiles()
+        mp_naive, ip_naive = helpers.naive_matrix_profile(t, window_size=w)
+        assert np.allclose(mpro, mp_naive), "PreSCRIMP_compute_matrix_profile_same_random_data: " \
+                                            "Should compute the matrix profile correctly."
+        assert np.allclose(ipro, ip_naive), "PreSCRIMP_compute_matrix_profile_same_random_data: " \
+                                            "Should compute the index profile correctly."
+
+    @pytest.mark.skip(reason="Randomized tests on approximate algorithms do not seem a correct thing to do.")
+    def test_PreSCRIMP_compute_matrix_profile_random_data(self):
+        n = np.random.randint(100, 200)
+        m = np.random.randint(100, 200)
+        t1 = np.random.rand(n)
+        t2 = np.random.rand(m)
+        w = np.random.randint(10, min(n, m) // 4)
+        mp = pytsmp.PreSCRIMP(t1, t2, window_size=w, verbose=False)
+        mpro, ipro = mp.get_profiles()
+        mp_naive, ip_naive = helpers.naive_matrix_profile(t1, t2, window_size=w)
+        assert np.allclose(mpro, mp_naive), "PreSCRIMP_compute_matrix_profile_random_data: " \
+                                            "Should compute the matrix profile correctly."
+        assert np.allclose(ipro, ip_naive), "PreSCRIMP_compute_matrix_profile_random_data: " \
+                                            "Should compute the index profile correctly."
+
+    @pytest.mark.skip(reason="To be tested later.")
+    def test_PreSCRIMP_compute_matrix_profile_data1(self):
+        t = np.loadtxt("./tests/data/random_walk_data.csv")
+        mpro_ans = np.loadtxt("./tests/data/random_walk_data_mpro.csv")
+        ipro_ans = np.loadtxt("./tests/data/random_walk_data_ipro.csv")
+        w = 50
+        mp = pytsmp.PreSCRIMP(t, window_size=w, verbose=False)
+        mpro, ipro = mp.get_profiles()
+        assert np.allclose(mpro, mpro_ans), "PreSCRIMP_compute_matrix_profile_data1: " \
+                                            "Should compute the matrix profile correctly. " \
+                                            "Max error is {}".format(np.max(np.abs(mpro - mpro_ans)))
+        # assert np.allclose(ipro, ipro_ans), "PreSCRIMP_compute_matrix_profile_data1: " \
+        #                                     "Should compute the index profile correctly."
+
+    @pytest.mark.skip(reason="To be tested later.")
+    def test_PreSCRIMP_compute_matrix_profile_data2(self):
+        t = np.loadtxt("./tests/data/candy_production.csv")
+        mpro_ans = np.loadtxt("./tests/data/candy_production_mpro.csv")
+        ipro_ans = np.loadtxt("./tests/data/candy_production_ipro.csv")
+        w = 80
+        mp = pytsmp.PreSCRIMP(t, window_size=w, verbose=False)
+        mpro, ipro = mp.get_profiles()
+        assert np.allclose(mpro, mpro_ans), "PreSCRIMP_compute_matrix_profile_data2: " \
+                                            "Should compute the matrix profile correctly. " \
+                                            "Max error is {}".format(np.max(np.abs(mpro - mpro_ans)))
+        assert np.allclose(ipro, ipro_ans), "PreSCRIMP_compute_matrix_profile_data1: " \
+                                            "Should compute the index profile correctly."
+
+    @pytest.mark.skip(reason="To be tested later.")
+    def test_PreSCRIMP_compute_matrix_profile_data3(self):
+        t = np.loadtxt("./tests/data/bitcoin_price.csv")
+        mpro_ans = np.loadtxt("./tests/data/bitcoin_price_mpro.csv")
+        ipro_ans = np.loadtxt("./tests/data/bitcoin_price_ipro.csv")
+        w = 100
+        mp = pytsmp.PreSCRIMP(t, window_size=w, verbose=False)
+        mpro, ipro = mp.get_profiles()
+        assert np.allclose(mpro, mpro_ans), "PreSCRIMP_compute_matrix_profile_data3: " \
+                                            "Should compute the matrix profile correctly. " \
+                                            "Max error is {}".format(np.max(np.abs(mpro - mpro_ans)))
+        assert np.allclose(ipro, ipro_ans), "PreSCRIMP_compute_matrix_profile_data3: " \
+                                            "Should compute the index profile correctly."
+
+

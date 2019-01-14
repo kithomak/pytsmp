@@ -420,18 +420,44 @@ class PreSCRIMP(MatrixProfile):
             for n_iter, idx in enumerate(self._iterator):
                 D = utils.mass(self.ts2[idx: idx+self.window_size], self.ts1)
                 self._elementwise_min(D, idx)
-                # compute diagonals starting from a slot in first column
-                # q = self.ts2[k:k + n1] * self.ts1[:n2 - k]
-                # q = utils.rolling_sum(q, self.window_size)
-                # D = utils.calculate_distance_profile(q, self.window_size, mu_Q[k:k + len(q)], sigma_Q[k:k + len(q)],
-                #                                      mu_T[:len(q)], sigma_T[:len(q)])
-                # self._index_profile[:len(q)] = np.where(D < self._matrix_profile[:len(q)],
-                #                                         np.arange(k, k + len(q)), self._index_profile[:len(q)])
-                # self._matrix_profile[:len(q)] = np.minimum(D, self._matrix_profile[:len(q)])
-                # if self._same_ts:
-                #     self._index_profile[k:k + len(q)] = np.where(D < self._matrix_profile[k:k + len(q)],
-                #                                                  np.arange(len(q)), self._index_profile[k:k + len(q)])
-                #     self._matrix_profile[k:k + len(q)] = np.minimum(D, self._matrix_profile[k:k + len(q)])
+                jdx = np.argmin(D)  # the index of closest profile to the current idx
+
+                # compute diagonals until the next sampled point
+                q1 = self.ts2[idx:idx + self.sample_interval + self.window_size - 1]
+                q2 = self.ts1[jdx:jdx + self.sample_interval + self.window_size - 1]
+                lq = min(len(q1), len(q2))
+                q = q1[:lq] * q2[:lq]
+                q = utils.rolling_sum(q, self.window_size)
+                D = utils.calculate_distance_profile(q, self.window_size, mu_Q[idx:idx + len(q)], sigma_Q[idx:idx + len(q)],
+                                                     mu_T[jdx:jdx + len(q)], sigma_T[jdx:jdx + len(q)])
+                self._index_profile[jdx: jdx + len(q)] = np.where(D < self._matrix_profile[jdx:jdx + len(q)],
+                                                        np.arange(idx, idx + len(q)), self._index_profile[jdx:jdx + len(q)])
+                self._matrix_profile[jdx:jdx + len(q)] = np.minimum(D, self._matrix_profile[jdx:jdx + len(q)])
+                if self._same_ts:
+                    self._index_profile[idx:idx + len(q)] = np.where(D < self._matrix_profile[idx:idx + len(q)],
+                                                                 np.arange(jdx, jdx + len(q)), self._index_profile[idx:idx + len(q)])
+                    self._matrix_profile[idx:idx + len(q)] = np.minimum(D, self._matrix_profile[idx:idx + len(q)])
+
+                # compute diagonals until the previous sampled point
+                if idx != 0:
+                    q1 = self.ts2[max(0, idx - self.sample_interval):(idx + self.window_size - 1)]
+                    q2 = self.ts1[max(0, jdx - self.sample_interval):(jdx + self.window_size - 1)]
+                    lq = min(len(q1), len(q2))
+                    q = q1[-lq:] * q2[-lq:]
+                    q = utils.rolling_sum(q, self.window_size)
+                    # print(len(q))
+                    D = utils.calculate_distance_profile(q, self.window_size, mu_Q[idx - len(q):idx],
+                                                         sigma_Q[idx - len(q):idx],
+                                                         mu_T[jdx - len(q):jdx], sigma_T[jdx - len(q):jdx])
+                    self._index_profile[jdx - len(q): jdx] = np.where(D < self._matrix_profile[jdx - len(q):jdx],
+                                                                      np.arange(idx - len(q), idx),
+                                                                      self._index_profile[jdx - len(q):jdx])
+                    self._matrix_profile[jdx - len(q):jdx] = np.minimum(D, self._matrix_profile[jdx - len(q):jdx])
+                    if self._same_ts:
+                        self._index_profile[idx - len(q):idx] = np.where(D < self._matrix_profile[idx - len(q):idx],
+                                                                         np.arange(jdx - len(q), jdx),
+                                                                         self._index_profile[idx - len(q):idx])
+                        self._matrix_profile[idx - len(q):idx] = np.minimum(D, self._matrix_profile[idx - len(q):idx])
         except KeyboardInterrupt:
             if self.verbose:
                 tqdm.write("Calculation interrupted at iteration {}. Approximate result returned.".format(n_iter))

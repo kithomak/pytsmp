@@ -116,6 +116,7 @@ def calculate_distance_profile(QT, m, mean_Q, sigma_Q, mean_T, sigma_T):
     :rtype: numpy array, of shape (len(T)-len(Q)+1,)
     :raises: ValueError: If len(QT), len(mean_T), len(sigma_T) are not all the same.
     """
+    # print(len(QT), len(mean_T), len(sigma_T), len(mean_Q) if type(mean_Q) == np.ndarray else "", len(sigma_Q) if type(sigma_Q) == np.ndarray else "")
     if len(QT) != len(mean_T) or len(mean_T) != len(sigma_T) or ((type(mean_Q) == np.ndarray or
                     type(sigma_Q) == np.ndarray) and (len(mean_Q) != len(sigma_Q) or len(mean_Q) != len(mean_T))):
         raise ValueError("Input dimension mismatch.")
