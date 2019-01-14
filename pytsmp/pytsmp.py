@@ -410,8 +410,6 @@ class PreSCRIMP(MatrixProfile):
         Compute the matrix profile using PreSCRIMP.
         """
         try:
-            n1 = len(self.ts1)
-            n2 = len(self.ts2)
             mu_T, sigma_T = utils.rolling_avg_sd(self.ts1, self.window_size)
             if self._same_ts:
                 mu_Q, sigma_Q = mu_T, sigma_T
@@ -439,7 +437,7 @@ class PreSCRIMP(MatrixProfile):
                     self._matrix_profile[idx:idx + len(q)] = np.minimum(D, self._matrix_profile[idx:idx + len(q)])
 
                 # compute diagonals until the previous sampled point
-                if idx != 0:
+                if idx != 0 and jdx != 0:
                     q1 = self.ts2[max(0, idx - self.sample_interval):(idx + self.window_size - 1)]
                     q2 = self.ts1[max(0, jdx - self.sample_interval):(jdx + self.window_size - 1)]
                     lq = min(len(q1), len(q2))
