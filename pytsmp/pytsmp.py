@@ -191,6 +191,13 @@ class STAMP(MatrixProfile):
 
     @property
     def is_anytime(self):
+        """
+        A property stating whether the algorithm for computing the matrix profile
+        in this class is an anytime algorithm.
+
+        :return: whether the algorithm in this class is an anytime algorithm.
+        :rtype: bool
+        """
         return True
 
     @property
@@ -242,6 +249,13 @@ class STOMP(MatrixProfile):
 
     @property
     def is_anytime(self):
+        """
+        A property stating whether the algorithm for computing the matrix profile
+        in this class is an anytime algorithm.
+
+        :return: whether the algorithm in this class is an anytime algorithm.
+        :rtype: bool
+        """
         return False
 
     @property
@@ -305,6 +319,13 @@ class SCRIMP(MatrixProfile):
 
     @property
     def is_anytime(self):
+        """
+        A property stating whether the algorithm for computing the matrix profile
+        in this class is an anytime algorithm.
+
+        :return: whether the algorithm in this class is an anytime algorithm.
+        :rtype: bool
+        """
         return True
 
     @property
@@ -368,9 +389,6 @@ class PreSCRIMP(MatrixProfile):
     Class for the calculation of matrix profile using PreSCRIMP algorithm. This is a very fast *approximate*
     anytime algorithm. See [MP3]_ for more details.
 
-    .. [MP3] Y. Zhu, C.C.M. Yeh, Z. Zimmerman, K. Kamgar and E. Keogh.
-       "Matrix Proﬁle XI: SCRIMP++: Time Series Motif Discovery at Interactive Speed". IEEE ICDM 2018.
-
     :param ts1: Time series for calculating the matrix profile.
     :type ts1: numpy array
     :param ts2: A second time series to compute matrix profile with respect to ts1. If None, ts1 will be used.
@@ -393,6 +411,13 @@ class PreSCRIMP(MatrixProfile):
 
     @property
     def is_anytime(self):
+        """
+        A property stating whether the algorithm for computing the matrix profile
+        in this class is an anytime algorithm.
+
+        :return: whether the algorithm in this class is an anytime algorithm.
+        :rtype: bool
+        """
         return True
 
     @property
