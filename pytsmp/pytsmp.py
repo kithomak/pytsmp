@@ -48,6 +48,7 @@ class MatrixProfile(ABC):
         self._matrix_profile = np.full((len(self.ts1) - self.window_size + 1,), np.inf)
         self._index_profile = np.full((len(self.ts1) - self.window_size + 1,), np.nan)
 
+        self._preprocess()
         self._compute_matrix_profile()
 
     @property
@@ -100,6 +101,15 @@ class MatrixProfile(ABC):
         :rtype: 2 numpy arrays, both of shape (len(ts1)-window_size+1,)
         """
         return self.get_matrix_profile(), self.get_index_profile()
+
+    def _preprocess(self):
+        """
+        Any preprocess (such as PreSCRIMP) to be done before the main computation. Default
+        is to do nothing.
+
+        :return: None.
+        """
+        pass
 
     @abstractmethod
     def _compute_matrix_profile(self):
@@ -311,10 +321,13 @@ class SCRIMP(MatrixProfile):
                                  centered at the point of interest.
                                  Must be non-negative. This parameter will be ignored if ts2 is not None.
     :param bool verbose: Whether to display progress or not.
-    :param float s_size: This parameter will be ignored by STOMP since it is not an anytime algorithm.
+    :param float s_size: Ratio of random calculations performed for anytime algorithms. Must be between 0 and 1,
+                         1 means calculate all, and 0 means none.
+    :param bool pre_scrimp: Whether to perform an approximate PreSCRIMP algorithm before running SCRIMP.
     :raises: ValueError: If the input is invalid.
     """
-    def __init__(self, ts1, ts2=None, window_size=None, exclusion_zone=1/2, verbose=True, s_size=1):
+    def __init__(self, ts1, ts2=None, window_size=None, exclusion_zone=1/2, verbose=True, s_size=1, pre_scrimp=True):
+        self.pre_scrimp = pre_scrimp
         super().__init__(ts1, ts2, window_size, exclusion_zone, verbose, s_size)
 
     @property
@@ -343,10 +356,23 @@ class SCRIMP(MatrixProfile):
             _iterator = idxes
         return _iterator
 
+    def _preprocess(self):
+        """
+        Here we do the PreSCRIMP before the SCRIMP algorithm if pre_scrimp = True.
+        """
+        if self.pre_scrimp:
+            if self.verbose:
+                tqdm.write("PreSCRIMP:")
+            self._pre_scrimp_class = PreSCRIMP(self.ts1, None if self._same_ts else self.ts2, window_size=self.window_size,
+                                               exclusion_zone=self.ez, verbose=self.verbose, s_size=self.s_size)
+            self._matrix_profile, self._index_profile = self._pre_scrimp_class.get_profiles()
+
     def _compute_matrix_profile(self):
         """
         Compute the matrix profile using SCRIMP.
         """
+        if self.verbose and self.pre_scrimp:
+            tqdm.write("SCRIMP:")
         try:
             n1 = len(self.ts1)
             n2 = len(self.ts2)
