@@ -51,10 +51,10 @@ class TestRollingAvgSd:
             "rolling_avg_sd_sanity2: rolling sd of full window size should equal the series sd"
 
     def test_rolling_avg_sd_data1(self):
-        t = np.loadtxt("./tests/data/random_walk_data.csv")
+        t = np.loadtxt("./data/random_walk_data.csv")
         ra, rsd = utils.rolling_avg_sd(t, 1000)
-        ra_ans = np.loadtxt("./tests/data/random_walk_data_rolling_mean.csv")
-        rsd_ans = np.loadtxt("./tests/data/random_walk_data_rolling_std.csv")
+        ra_ans = np.loadtxt("./data/random_walk_data_rolling_mean.csv")
+        rsd_ans = np.loadtxt("./data/random_walk_data_rolling_std.csv")
         assert np.allclose(ra, ra_ans), "rolling_avg_sd_random_data: rolling sum should be computed correctly"
         assert np.allclose(rsd, rsd_ans), "rolling_avg_sd_random_data: rolling sd should be computed correctly"
 
@@ -104,10 +104,10 @@ class TestSlidingDotProduct:
         assert np.allclose(sdp, t), "sliding_dot_product_sanity2: dot product of a vector with [1] should contain itself"
 
     def test_sliding_dot_product_data1(self):
-        t = np.loadtxt("./tests/data/random_walk_data.csv")
+        t = np.loadtxt("./data/random_walk_data.csv")
         q = t[:1000]
         sdp = utils.sliding_dot_product(q, t)
-        ans = np.loadtxt("./tests/data/random_walk_data_sdp.csv")
+        ans = np.loadtxt("./data/random_walk_data_sdp.csv")
         assert len(sdp) == len(t) - len(q) + 1, "sliding_dot_product_data1: result should have correct length"
         assert np.allclose(sdp, ans), "sliding_dot_product_data1: sliding dot product should be computed correctly"
 
@@ -145,12 +145,12 @@ class TestCalculateDistanceProfile:
             dp = utils.calculate_distance_profile(qt, 10, rolling_mean[0], rolling_std[0], rolling_mean, rolling_std)
 
     def test_calculate_distance_profile_data1(self):
-        qt = np.loadtxt("./tests/data/random_walk_data_sdp.csv")
-        rolling_mean = np.loadtxt("./tests/data/random_walk_data_rolling_mean.csv")
-        rolling_std = np.loadtxt("./tests/data/random_walk_data_rolling_std.csv")
+        qt = np.loadtxt("./data/random_walk_data_sdp.csv")
+        rolling_mean = np.loadtxt("./data/random_walk_data_rolling_mean.csv")
+        rolling_std = np.loadtxt("./data/random_walk_data_rolling_std.csv")
         m = 1000
         dp = utils.calculate_distance_profile(qt, m, rolling_mean[0], rolling_std[0], rolling_mean, rolling_std)
-        ans = np.loadtxt("./tests/data/random_walk_data_distance_profile.csv")
+        ans = np.loadtxt("./data/random_walk_data_distance_profile.csv")
         assert len(dp) == len(qt), "mass_data1: result should have correct length"
         assert np.allclose(dp, ans), "calculate_distance_profile_data1: distance profile should be computer correctly"
 
@@ -171,10 +171,10 @@ class TestMASS:
         assert dp[k] < 1e-5, "test_mass_sanity: distance of a series to itself should be zero"
 
     def test_mass_data1(self):
-        t = np.loadtxt("./tests/data/random_walk_data.csv")
+        t = np.loadtxt("./data/random_walk_data.csv")
         q = t[:1000]
         dp = utils.mass(q, t)
-        ans = np.loadtxt("./tests/data/random_walk_data_distance_profile.csv")
+        ans = np.loadtxt("./data/random_walk_data_distance_profile.csv")
         assert len(dp) == len(t) - len(q) + 1, "mass_data1: result should have correct length"
         assert np.allclose(dp, ans, atol=1e-5), "mass_data1: distance profile should be computed correctly"
 

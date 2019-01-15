@@ -323,11 +323,16 @@ class SCRIMP(MatrixProfile):
     :param bool verbose: Whether to display progress or not.
     :param float s_size: Ratio of random calculations performed for anytime algorithms. Must be between 0 and 1,
                          1 means calculate all, and 0 means none.
-    :param bool pre_scrimp: Whether to perform an approximate PreSCRIMP algorithm before running SCRIMP.
+    :param float pre_scrimp: Whether to perform an approximate PreSCRIMP algorithm before running SCRIMP. 0 means
+                             not performing PreSCRIMP, and any number greater than 0 means performing PreSCRIMP with
+                             its sample_rate parameter set to that number.
     :raises: ValueError: If the input is invalid.
     """
-    def __init__(self, ts1, ts2=None, window_size=None, exclusion_zone=1/2, verbose=True, s_size=1, pre_scrimp=True):
-        self.pre_scrimp = pre_scrimp
+    def __init__(self, ts1, ts2=None, window_size=None, exclusion_zone=1/2, verbose=True, s_size=1, pre_scrimp=1/4):
+        if pre_scrimp >= 0:
+            self.pre_scrimp = pre_scrimp
+        else:
+            raise ValueError("pre_scrimp parameter must be non-negative.")
         super().__init__(ts1, ts2, window_size, exclusion_zone, verbose, s_size)
 
     @property
@@ -360,18 +365,20 @@ class SCRIMP(MatrixProfile):
         """
         Here we do the PreSCRIMP before the SCRIMP algorithm if pre_scrimp = True.
         """
-        if self.pre_scrimp:
+        if self.pre_scrimp > 0:
             if self.verbose:
                 tqdm.write("PreSCRIMP:")
-            self._pre_scrimp_class = PreSCRIMP(self.ts1, None if self._same_ts else self.ts2, window_size=self.window_size,
-                                               exclusion_zone=self.ez, verbose=self.verbose, s_size=self.s_size)
+            self._pre_scrimp_class = PreSCRIMP(self.ts1, None if self._same_ts else self.ts2,
+                                               window_size=self.window_size,
+                                               exclusion_zone=self.ez, verbose=self.verbose,
+                                               s_size=self.s_size, sample_rate=self.pre_scrimp)
             self._matrix_profile, self._index_profile = self._pre_scrimp_class.get_profiles()
 
     def _compute_matrix_profile(self):
         """
         Compute the matrix profile using SCRIMP.
         """
-        if self.verbose and self.pre_scrimp:
+        if self.verbose and self.pre_scrimp > 0:
             tqdm.write("SCRIMP:")
         try:
             n1 = len(self.ts1)
@@ -426,13 +433,16 @@ class PreSCRIMP(MatrixProfile):
     :param bool verbose: Whether to display progress or not.
     :param float s_size: Ratio of random calculations performed for anytime algorithms. Must be between 0 and 1,
                          1 means calculate all, and 0 means none.
-    :param sample_interval: Sample interval in the PreSCRIMP algorithm. The sample interval is
+    :param sample_rate: Sample rate in the PreSCRIMP algorithm. The sample interval is
                             this number times window_size. Must be positive. Defaults to 1/4.
     :raises: ValueError: If the input is invalid.
     """
-    def __init__(self, ts1, ts2=None, window_size=None, exclusion_zone=1/2, verbose=True, s_size=1, sample_interval=1/4):
-        self.si = sample_interval
-        self.sample_interval = round(window_size * sample_interval + 1e-5)
+    def __init__(self, ts1, ts2=None, window_size=None, exclusion_zone=1/2, verbose=True, s_size=1, sample_rate=1/4):
+        if sample_rate > 0:
+            self.sr = sample_rate
+        else:
+            raise ValueError("sample_rate must be positive.")
+        self.sample_interval = round(window_size * sample_rate + 1e-5)
         super().__init__(ts1, ts2, window_size, exclusion_zone, verbose, s_size)
 
     @property
@@ -494,7 +504,6 @@ class PreSCRIMP(MatrixProfile):
                     lq = min(len(q1), len(q2))
                     q = q1[-lq:] * q2[-lq:]
                     q = utils.rolling_sum(q, self.window_size)
-                    # print(len(q))
                     D = utils.calculate_distance_profile(q, self.window_size, mu_Q[idx - len(q):idx],
                                                          sigma_Q[idx - len(q):idx],
                                                          mu_T[jdx - len(q):jdx], sigma_T[jdx - len(q):jdx])

@@ -122,10 +122,14 @@ On my MacBook Pro with 2.2 GHz Intel Core i7, the results are (all over 7 runs, 
      - 40000
      - 1000
      - 22.1s ± 52.8ms
-   * - SCRIMP
+   * - SCRIMP (without PreSCRIMP)
      - 40000
      - 1000
      - 23.6s ± 402ms
+   * - PreSCRIMP (Approximate algorithm)
+     - 40000
+     - 1000
+     - 606ms ± 9.5ms
 
 
 
