@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+import heapq
 import numpy as np
 from tqdm.autonotebook import tqdm
 
@@ -9,7 +10,7 @@ class MatrixProfile(ABC):
     """
     The base class for matrix profile computation. This is an abstract class, you cannot instantiate from this class.
     """
-    def __init__(self, ts1, ts2=None, window_size=None, exclusion_zone=1/2, verbose=True, s_size=1):
+    def __init__(self, ts1, ts2=None, window_size=None, exclusion_zone=1/2, verbose=True, s_size=1, seed=None):
         """
         Base constructor.
 
@@ -25,6 +26,8 @@ class MatrixProfile(ABC):
         :param float s_size: Ratio of random calculations performed for anytime algorithms. Must be between 0 and 1,
                              1 means calculate all, and 0 means none. This parameter will be ignored if the algorithm
                              is not anytime.
+        :param seed: Random seed used in numpy.random. None means to use a random seed.
+        :type seed: int or None
         :raises: ValueError: If the input is invalid.
         """
         self.ts1 = np.copy(ts1).astype("float64")
@@ -43,6 +46,7 @@ class MatrixProfile(ABC):
             self.s_size = s_size
         else:
             raise ValueError("s_size must be between 0 and 1.")
+        self.seed = seed
 
         self._same_ts = ts2 is None
         self._matrix_profile = np.full((len(self.ts1) - self.window_size + 1,), np.inf)
@@ -174,6 +178,17 @@ class MatrixProfile(ABC):
             D = utils.mass(s, self.ts1)
             self._elementwise_min(D, idx)
 
+    def discord(self, k, exclusion_zone=None):
+        """
+        Find the top k discords of the time series from the matrix profile.
+
+        :param int k: (Max) number of discord to be found. Must be positive.
+        :param int exclusion_zone: The number of samples to exclude from either side of a previously found discord.
+        :return: The indexes of the discord found, sorted by their corresponding values in the matrix profile.
+        :rtype: numpy array
+        """
+        return np.array(heapq.nlargest(k, np.arange(self._matrix_profile.shape[0]), self._matrix_profile.take))
+
 
 class STAMP(MatrixProfile):
     """
@@ -194,10 +209,12 @@ class STAMP(MatrixProfile):
     :param bool verbose: Whether to display progress or not.
     :param float s_size: Ratio of random calculations performed for anytime algorithms. Must be between 0 and 1,
                          1 means calculate all, and 0 means none.
+    :param seed: Random seed used in numpy.random. None means to use a random seed.
+    :type seed: int or None
     :raises: ValueError: If the input is invalid.
     """
-    def __init__(self, ts1, ts2=None, window_size=None, exclusion_zone=1/2, verbose=True, s_size=1):
-        super().__init__(ts1, ts2, window_size, exclusion_zone, verbose, s_size)
+    def __init__(self, ts1, ts2=None, window_size=None, exclusion_zone=1/2, verbose=True, s_size=1, seed=None):
+        super().__init__(ts1, ts2, window_size, exclusion_zone, verbose, s_size, seed)
 
     @property
     def is_anytime(self):
@@ -212,7 +229,7 @@ class STAMP(MatrixProfile):
 
     @property
     def _iterator(self):
-        idxes = np.random.permutation(range(len(self.ts2) - self.window_size + 1))
+        idxes = np.random.RandomState(self.seed).permutation(range(len(self.ts2) - self.window_size + 1))
         idxes = idxes[:round(self.s_size * len(idxes) + 1e-5)]
         if self.verbose:
             _iterator = tqdm(idxes)
@@ -252,10 +269,12 @@ class STOMP(MatrixProfile):
                                  Must be non-negative. This parameter will be ignored if ts2 is not None.
     :param bool verbose: Whether to display progress or not.
     :param float s_size: This parameter will be ignored by STOMP since it is not an anytime algorithm.
+    :param seed: This parameter will be ignored by STOMP since no randomness is needed in thhis algorithm.
+    :type seed: int or None
     :raises: ValueError: If the input is invalid.
     """
-    def __init__(self, ts1, ts2=None, window_size=None, exclusion_zone=1/2, verbose=True, s_size=1):
-        super().__init__(ts1, ts2, window_size, exclusion_zone, verbose, s_size)
+    def __init__(self, ts1, ts2=None, window_size=None, exclusion_zone=1/2, verbose=True, s_size=1, seed=None):
+        super().__init__(ts1, ts2, window_size, exclusion_zone, verbose, s_size, seed)
 
     @property
     def is_anytime(self):
@@ -326,14 +345,16 @@ class SCRIMP(MatrixProfile):
     :param float pre_scrimp: Whether to perform an approximate PreSCRIMP algorithm before running SCRIMP. 0 means
                              not performing PreSCRIMP, and any number greater than 0 means performing PreSCRIMP with
                              its sample_rate parameter set to that number.
+    :param seed: Random seed used in numpy.random. None means to use a random seed.
+    :type seed: int or None
     :raises: ValueError: If the input is invalid.
     """
-    def __init__(self, ts1, ts2=None, window_size=None, exclusion_zone=1/2, verbose=True, s_size=1, pre_scrimp=1/4):
+    def __init__(self, ts1, ts2=None, window_size=None, exclusion_zone=1/2, verbose=True, s_size=1, seed=None, pre_scrimp=1/4):
         if pre_scrimp >= 0:
             self.pre_scrimp = pre_scrimp
         else:
             raise ValueError("pre_scrimp parameter must be non-negative.")
-        super().__init__(ts1, ts2, window_size, exclusion_zone, verbose, s_size)
+        super().__init__(ts1, ts2, window_size, exclusion_zone, verbose, s_size, seed)
 
     @property
     def is_anytime(self):
@@ -349,10 +370,10 @@ class SCRIMP(MatrixProfile):
     @property
     def _iterator(self):
         if self._same_ts:
-            idxes = np.random.permutation(range(self.exclusion_zone + 1,
+            idxes = np.random.RandomState(self.seed).permutation(range(self.exclusion_zone + 1,
                                                 len(self.ts2) - self.window_size + 1))
         else:
-            idxes = np.random.permutation(range(-len(self.ts1) + self.window_size,
+            idxes = np.random.RandomState(self.seed).permutation(range(-len(self.ts1) + self.window_size,
                                                 len(self.ts2) - self.window_size + 1))
         idxes = idxes[:round(self.s_size * len(idxes) + 1e-5)]
         if self.verbose:
@@ -433,17 +454,19 @@ class PreSCRIMP(MatrixProfile):
     :param bool verbose: Whether to display progress or not.
     :param float s_size: Ratio of random calculations performed for anytime algorithms. Must be between 0 and 1,
                          1 means calculate all, and 0 means none.
-    :param sample_rate: Sample rate in the PreSCRIMP algorithm. The sample interval is
-                            this number times window_size. Must be positive. Defaults to 1/4.
+    :param sample_rate: Sample rate in the PreSCRIMP algorithm. The sample interval is this number times window_size.
+                        Must be positive. Defaults to 1/4.
+    :param seed: Random seed used in numpy.random. None means to use a random seed.
+    :type seed: int or None
     :raises: ValueError: If the input is invalid.
     """
-    def __init__(self, ts1, ts2=None, window_size=None, exclusion_zone=1/2, verbose=True, s_size=1, sample_rate=1/4):
+    def __init__(self, ts1, ts2=None, window_size=None, exclusion_zone=1/2, verbose=True, s_size=1, seed=None, sample_rate=1/4):
         if sample_rate > 0:
             self.sr = sample_rate
         else:
             raise ValueError("sample_rate must be positive.")
         self.sample_interval = round(window_size * sample_rate + 1e-5)
-        super().__init__(ts1, ts2, window_size, exclusion_zone, verbose, s_size)
+        super().__init__(ts1, ts2, window_size, exclusion_zone, verbose, s_size, seed)
 
     @property
     def is_anytime(self):
@@ -458,7 +481,7 @@ class PreSCRIMP(MatrixProfile):
 
     @property
     def _iterator(self):
-        idxes = np.random.permutation(range(0, len(self.ts2) - self.window_size + 1, self.sample_interval))
+        idxes = np.random.RandomState(self.seed).permutation(range(0, len(self.ts2) - self.window_size + 1, self.sample_interval))
         idxes = idxes[:round(self.s_size * len(idxes) + 1e-5)]
         if self.verbose:
             _iterator = tqdm(idxes)

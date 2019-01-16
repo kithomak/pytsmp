@@ -28,9 +28,9 @@ pytsmp
 found in the `UCR Matrix Profile Page <http://www.cs.ucr.edu/~eamonn/MatrixProfile.html>`_
 by the paper authors.
 
-Currently, only MASS and STAMP (single-core, no GPU support) is implemented.
-I plan to implement other algorithms (STOMP, SCRIMP++), their parallelized version,
-as well as convenience functions such as motif finding and anomaly detection.
+Currently support MASS and the matrix profile algorithms STAMP, STOMP, SCRIMP++ (no multi-core or GPU support yet).
+I plan to implement their parallelized version as well as some convenience functions
+such as motif finding and anomaly detection.
 
 The original implementation (in R) of the paper authors from the UCR group can be found
 `here <https://github.com/franzbischoff/tsmp>`_.
