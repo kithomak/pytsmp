@@ -178,16 +178,16 @@ class MatrixProfile(ABC):
             D = utils.mass(s, self.ts1)
             self._elementwise_min(D, idx)
 
-    def discord(self, k, exclusion_zone=None):
+    def discord(self, num_discords, exclusion_zone=None):
         """
-        Find the top k discords of the time series from the matrix profile.
+        Find the top discords of the time series from the matrix profile.
 
-        :param int k: (Max) number of discord to be found. Must be positive.
+        :param int num_discords: (Max) number of discord to be found. Must be positive.
         :param int exclusion_zone: The number of samples to exclude from either side of a previously found discord.
         :return: The indexes of the discord found, sorted by their corresponding values in the matrix profile.
         :rtype: numpy array
         """
-        return np.array(heapq.nlargest(k, np.arange(self._matrix_profile.shape[0]), self._matrix_profile.take))
+        return np.array(heapq.nlargest(num_discords, np.arange(self._matrix_profile.shape[0]), self._matrix_profile.take))
 
 
 class STAMP(MatrixProfile):
