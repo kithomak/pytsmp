@@ -15,7 +15,7 @@ def read(filename):
 
 setup(
     name="pytsmp",
-    version="0.1.1",
+    version="0.3.0",
     url="https://github.com/kithomak/pytsmp",
     license='MIT',
 
