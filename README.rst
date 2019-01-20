@@ -96,10 +96,11 @@ Perform a simple trial run on a random walk with 40000 data points.
    import numpy as np
    from pytsmp import STAMP
 
+   np.random.seed(42)  # fix a seed to control randomness
    ts = np.cumsum(np.random.randint(2, size=(40000,)) * 2 - 1)
 
    # ipython magic command
-   %timeit mp = STAMP(ts, window_size=1000, verbose=False)
+   %timeit mp = STAMP(ts, window_size=1000, verbose=False, seed=42)
 
    # and similarly for STOMP and SCRIMP
 

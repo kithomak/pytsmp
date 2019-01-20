@@ -269,7 +269,7 @@ class STOMP(MatrixProfile):
                                  Must be non-negative. This parameter will be ignored if ts2 is not None.
     :param bool verbose: Whether to display progress or not.
     :param float s_size: This parameter will be ignored by STOMP since it is not an anytime algorithm.
-    :param seed: This parameter will be ignored by STOMP since no randomness is needed in thhis algorithm.
+    :param seed: This parameter will be ignored by STOMP since no randomness is needed in this algorithm.
     :type seed: int or None
     :raises: ValueError: If the input is invalid.
     """

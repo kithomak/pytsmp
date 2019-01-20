@@ -144,6 +144,39 @@ class TestCalculateDistanceProfile:
             rolling_std = np.random.rand(101)
             dp = utils.calculate_distance_profile(qt, 10, rolling_mean[0], rolling_std[0], rolling_mean, rolling_std)
 
+    def test_calculate_distance_profile_constant_query(self):
+        n = 100
+        m = np.random.randint(10, n // 2)
+        t = np.random.rand(n)
+        q = np.full(m, np.random.rand())
+        qt = utils.sliding_dot_product(q, t)
+        rolling_mean, rolling_std = utils.rolling_avg_sd(t, m)
+        dp = utils.calculate_distance_profile(qt, m, q[0], 0, rolling_mean, rolling_std)
+        assert np.allclose(dp, np.full(n - m + 1, np.sqrt(m))), "calculate_distance_profile_constant_query: " \
+                                        "distance of nonconstant sequence to constant query is sqrt(m) by definition."
+
+    def test_calculate_distance_profile_constant_sequence(self):
+        n = 100
+        m = np.random.randint(10, n // 2)
+        t = np.full(n, np.random.rand())
+        q = np.random.rand(m)
+        qt = utils.sliding_dot_product(q, t)
+        rolling_mean, rolling_std = utils.rolling_avg_sd(t, m)
+        dp = utils.calculate_distance_profile(qt, m, np.mean(q), np.std(q), rolling_mean, rolling_std)
+        assert np.allclose(dp, np.full(n - m + 1, np.sqrt(m))), "calculate_distance_profile_constant_sequence: " \
+                                        "distance of nonconstant query to constant sequence is sqrt(m) by definition."
+
+    def test_calculate_distance_profile_constant_sequence_and_query(self):
+        n = 100
+        m = np.random.randint(10, n // 2)
+        t = np.full(n, np.random.rand())
+        q = np.full(m, np.random.rand())
+        qt = utils.sliding_dot_product(q, t)
+        rolling_mean, rolling_std = utils.rolling_avg_sd(t, m)
+        dp = utils.calculate_distance_profile(qt, m, np.mean(q), np.std(q), rolling_mean, rolling_std)
+        assert np.allclose(dp, np.full(n - m + 1, 0)), "calculate_distance_profile_constant_sequence_and_query: " \
+                                        "distance of constant query to constant sequence is ero by definition."
+
     def test_calculate_distance_profile_data1(self):
         qt = np.loadtxt("./data/random_walk_data_sdp.csv")
         rolling_mean = np.loadtxt("./data/random_walk_data_rolling_mean.csv")

@@ -1,6 +1,8 @@
 import numpy as np
 
 
+EPSILON = 1e-7
+
 def rolling_sum(t, window_size):
     """
     Compute rolling sum of a given time series t, with given window size. Raise ValueError
@@ -123,8 +125,8 @@ def calculate_distance_profile(QT, m, mean_Q, sigma_Q, mean_T, sigma_T):
                     type(sigma_Q) == np.ndarray) and (len(mean_Q) != len(sigma_Q) or len(mean_Q) != len(mean_T))):
         raise ValueError("Input dimension mismatch.")
     # Take max with 0 before the sqaure root to eliminate complex numbers resulted in floating point error.
-    D = np.where(sigma_Q == 0, np.where(sigma_T == 0, np.full(len(QT), 0), np.full(len(QT), np.sqrt(m))),
-                 np.where(sigma_T == 0, np.full(len(QT), np.sqrt(m)),
+    D = np.where(np.abs(sigma_Q) < EPSILON, np.where(np.abs(sigma_T) < EPSILON, np.full(len(QT), 0), np.full(len(QT), np.sqrt(m))),
+                 np.where(np.abs(sigma_T) < EPSILON, np.full(len(QT), np.sqrt(m)),
                           np.sqrt(np.maximum(2 * m * (1 - (QT - m * mean_Q * mean_T) / (m * sigma_Q * sigma_T)), 0))))
     return D
 
