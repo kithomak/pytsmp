@@ -101,6 +101,9 @@ def calculate_distance_profile(QT, m, mean_Q, sigma_Q, mean_T, sigma_T):
     Note that T and Q are not required in the input, and the algorithm will not check if the inputs
     are really from two series Q, T and are compatible.
 
+    Note: We artificially set the distance of a constant sequence to anything (non-constant) to be sqrt(m).
+    This is a temporary fix of the constant subsequence problem, and may subject to change later.
+
     :param QT: The sliding dot product of T and Q.
     :type QT: numpy array
     :param int m: Length of Q.
@@ -120,7 +123,9 @@ def calculate_distance_profile(QT, m, mean_Q, sigma_Q, mean_T, sigma_T):
                     type(sigma_Q) == np.ndarray) and (len(mean_Q) != len(sigma_Q) or len(mean_Q) != len(mean_T))):
         raise ValueError("Input dimension mismatch.")
     # Take max with 0 before the sqaure root to eliminate complex numbers resulted in floating point error.
-    D = np.sqrt(np.maximum(2 * m * (1 - (QT - m * mean_Q * mean_T) / (m * sigma_Q * sigma_T)), 0))
+    D = np.where(sigma_Q == 0, np.where(sigma_T == 0, np.full(len(QT), 0), np.full(len(QT), np.sqrt(m))),
+                 np.where(sigma_T == 0, np.full(len(QT), np.sqrt(m)),
+                          np.sqrt(np.maximum(2 * m * (1 - (QT - m * mean_Q * mean_T) / (m * sigma_Q * sigma_T)), 0))))
     return D
 
 
