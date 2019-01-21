@@ -1,8 +1,6 @@
 import numpy as np
 
 
-EPSILON = 1e-7
-
 def rolling_sum(t, window_size):
     """
     Compute rolling sum of a given time series t, with given window size. Raise ValueError
@@ -95,7 +93,7 @@ def sliding_dot_product(Q, T):
     return QT[m-1:n]
 
 
-def calculate_distance_profile(QT, m, mean_Q, sigma_Q, mean_T, sigma_T):
+def calculate_distance_profile(QT, m, mean_Q, sigma_Q, mean_T, sigma_T, epsilon=1e-7):
     """
     Subroutine for calculating the distance profile of a time series T with respect to a query Q,
     if the sliding dot product between the time series and the query,
@@ -103,7 +101,8 @@ def calculate_distance_profile(QT, m, mean_Q, sigma_Q, mean_T, sigma_T):
     Note that T and Q are not required in the input, and the algorithm will not check if the inputs
     are really from two series Q, T and are compatible.
 
-    Note: We artificially set the distance of a constant sequence to anything (non-constant) to be sqrt(m).
+    Note: We artificially set the distance of a constant sequence to anything (non-constant) to be sqrt(m),
+    which is the norm of any (non-constant) normalized sequence.
     This is a temporary fix of the constant subsequence problem, and may subject to change later.
 
     :param QT: The sliding dot product of T and Q.
@@ -117,6 +116,8 @@ def calculate_distance_profile(QT, m, mean_Q, sigma_Q, mean_T, sigma_T):
     :type mean_T: numpy array
     :param sigma_T: The rolling sd (with window size m) of T
     :type sigma_T: numpy array
+    :param float epsilon: Tolerance. If the standard derviation of a subsequence is less than epsilon, the sequence is
+                          treated as constant, and distance is calculated as the note above.
     :return: The distance profile of T with respect to Q.
     :rtype: numpy array, of shape (len(T)-len(Q)+1,)
     :raises: ValueError: If len(QT), len(mean_T), len(sigma_T) are not all the same.
@@ -125,8 +126,8 @@ def calculate_distance_profile(QT, m, mean_Q, sigma_Q, mean_T, sigma_T):
                     type(sigma_Q) == np.ndarray) and (len(mean_Q) != len(sigma_Q) or len(mean_Q) != len(mean_T))):
         raise ValueError("Input dimension mismatch.")
     # Take max with 0 before the sqaure root to eliminate complex numbers resulted in floating point error.
-    D = np.where(np.abs(sigma_Q) < EPSILON, np.where(np.abs(sigma_T) < EPSILON, np.full(len(QT), 0), np.full(len(QT), np.sqrt(m))),
-                 np.where(np.abs(sigma_T) < EPSILON, np.full(len(QT), np.sqrt(m)),
+    D = np.where(np.abs(sigma_Q) < epsilon, np.where(np.abs(sigma_T) < epsilon, np.full(len(QT), 0), np.full(len(QT), np.sqrt(m))),
+                 np.where(np.abs(sigma_T) < epsilon, np.full(len(QT), np.sqrt(m)),
                           np.sqrt(np.maximum(2 * m * (1 - (QT - m * mean_Q * mean_T) / (m * sigma_Q * sigma_T)), 0))))
     return D
 

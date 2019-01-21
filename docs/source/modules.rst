@@ -4,4 +4,5 @@ pytsmp
 .. toctree::
    :maxdepth: 4
 
-   pytsmp
+   Main Classes <pytsmp>
+   Utils <utils>

@@ -1,3 +1,6 @@
+pytsmp
+======
+
 pytsmp.MatrixProfile
 --------------------
 
@@ -36,14 +39,6 @@ pytsmp.PreSCRIMP
 .. autoclass:: pytsmp.pytsmp.PreSCRIMP
     :members:
     :inherited-members:
-    :undoc-members:
-    :show-inheritance:
-
-pytsmp.utils
-------------
-
-.. automodule:: pytsmp.utils
-    :members:
     :undoc-members:
     :show-inheritance:
 
