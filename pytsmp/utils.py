@@ -125,10 +125,12 @@ def calculate_distance_profile(QT, m, mean_Q, sigma_Q, mean_T, sigma_T, epsilon=
     if len(QT) != len(mean_T) or len(mean_T) != len(sigma_T) or ((type(mean_Q) == np.ndarray or
                     type(sigma_Q) == np.ndarray) and (len(mean_Q) != len(sigma_Q) or len(mean_Q) != len(mean_T))):
         raise ValueError("Input dimension mismatch.")
-    # Take max with 0 before the sqaure root to eliminate complex numbers resulted in floating point error.
-    D = np.where(np.abs(sigma_Q) < epsilon, np.where(np.abs(sigma_T) < epsilon, np.full(len(QT), 0), np.full(len(QT), np.sqrt(m))),
-                 np.where(np.abs(sigma_T) < epsilon, np.full(len(QT), np.sqrt(m)),
-                          np.sqrt(np.maximum(2 * m * (1 - (QT - m * mean_Q * mean_T) / (m * sigma_Q * sigma_T)), 0))))
+    with np.errstate(divide='ignore', invalid='ignore'):  # to ignore the invalid division warning that I know is not a problem
+        D = np.where(np.abs(sigma_Q) < epsilon,
+                     np.where(np.abs(sigma_T) < epsilon, np.full(len(QT), 0), np.full(len(QT), np.sqrt(m))),
+                     np.where(np.abs(sigma_T) < epsilon,
+                              np.full(len(QT), np.sqrt(m)),
+                              np.sqrt(np.maximum(2 * m * (1 - (QT - m * mean_Q * mean_T) / (m * sigma_Q * sigma_T)), 0))))
     return D
 
 
