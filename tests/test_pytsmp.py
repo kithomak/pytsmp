@@ -51,7 +51,7 @@ class TestSTAMP:
 
     def test_STAMP_is_anytime(self):
         t = np.random.rand(1000)
-        mp = pytsmp.STAMP(t, window_size=10, s_size=1, verbose=False)
+        mp = pytsmp.STAMP(t, window_size=10, s_size=1, verbose=True)  # for coverage purpose
         is_anytime = mp.is_anytime
         assert is_anytime == True, "STAMP_is_anytime: STAMP should be an anytime algorithm."
 
@@ -348,7 +348,7 @@ class TestSTAMP:
 class TestSTOMP:
     def test_STOMP_is_anytime(self):
         t = np.random.rand(1000)
-        mp = pytsmp.STOMP(t, window_size=10, s_size=1, verbose=False)
+        mp = pytsmp.STOMP(t, window_size=10, s_size=1, verbose=True)
         is_anytime = mp.is_anytime
         assert is_anytime == False, "STOMP_is_anytime: STOMP should not be an anytime algorithm."
 
@@ -455,7 +455,7 @@ class TestSTOMP:
 class TestSCRIMP:
     def test_SCRIMP_is_anytime(self):
         t = np.random.rand(1000)
-        mp = pytsmp.SCRIMP(t, window_size=10, s_size=1, verbose=False, pre_scrimp=0)
+        mp = pytsmp.SCRIMP(t, window_size=10, s_size=1, verbose=True, pre_scrimp=0)
         is_anytime = mp.is_anytime
         assert is_anytime == True, "SCRIMP_is_anytime: SCRIMP should be an anytime algorithm."
 
@@ -562,7 +562,7 @@ class TestSCRIMP:
 class TestPreSCRIMP:
     def test_PreSCRIMP_is_anytime(self):
         t = np.random.rand(1000)
-        mp = pytsmp.PreSCRIMP(t, window_size=10, s_size=1, verbose=False)
+        mp = pytsmp.PreSCRIMP(t, window_size=10, s_size=1, verbose=True)
         is_anytime = mp.is_anytime
         assert is_anytime == True, "PreSCRIMP_is_anytime: PreSCRIMP should be an anytime algorithm."
 

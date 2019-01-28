@@ -1,5 +1,4 @@
 from abc import ABC, abstractmethod
-import heapq
 import numpy as np
 from tqdm.autonotebook import tqdm
 
@@ -50,7 +49,7 @@ class MatrixProfile(ABC):
 
         self._same_ts = ts2 is None
         self._matrix_profile = np.full((len(self.ts1) - self.window_size + 1,), np.inf)
-        self._index_profile = np.full((len(self.ts1) - self.window_size + 1,), np.nan)
+        self._index_profile = np.full((len(self.ts1) - self.window_size + 1,), np.nan, dtype=int)
 
         self._preprocess()
         self._compute_matrix_profile()
@@ -178,16 +177,26 @@ class MatrixProfile(ABC):
             D = utils.mass(s, self.ts1)
             self._elementwise_min(D, idx)
 
-    def discord(self, num_discords, exclusion_zone=None):
+    def discord(self, num_discords, exclusion_zone=0):
         """
         Find the top discords of the time series from the matrix profile.
 
         :param int num_discords: (Max) number of discord to be found. Must be positive.
-        :param int exclusion_zone: The number of samples to exclude from either side of a previously found discord.
+        :param float exclusion_zone: The exclusion zone from either side of a previously found discord. The length
+                                     of exclusion zone is this number times window_size, centered at the point
+                                     of interest. Must be non-negative.
         :return: The indexes of the discord found, sorted by their corresponding values in the matrix profile.
         :rtype: numpy array
         """
-        return np.array(heapq.nlargest(num_discords, np.arange(self._matrix_profile.shape[0]), self._matrix_profile.take))
+        profile = self._matrix_profile.copy()
+        discords = np.empty(num_discords, dtype=int)
+        exclusion_number = round(self.window_size * exclusion_zone + 1e-5)
+        for i in range(num_discords):
+            discords[i] = np.argmax(profile)
+            lower_bound = max(0, discords[i] - exclusion_number)
+            upper_bound = min(len(profile), discords[i] + exclusion_number) + 1
+            profile[lower_bound:upper_bound] = -np.inf
+        return discords
 
 
 class STAMP(MatrixProfile):
