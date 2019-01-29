@@ -177,7 +177,7 @@ class MatrixProfile(ABC):
             D = utils.mass(s, self.ts1)
             self._elementwise_min(D, idx)
 
-    def find_discord(self, num_discords, exclusion_zone=0):
+    def find_discords(self, num_discords, exclusion_zone=0):
         """
         Find the top discords of the time series from the matrix profile.
 
@@ -200,7 +200,7 @@ class MatrixProfile(ABC):
             profile[lower_bound:upper_bound] = -np.inf
         return discords
 
-    def find_motif(self, num_motifs, exclusion_zone=0):
+    def find_motifs(self, num_motifs, exclusion_zone=0):
         """
         Find the top motifs of the time series from the matrix profile.
 
@@ -211,7 +211,21 @@ class MatrixProfile(ABC):
         :return: The index pairs of the motifs found, sorted by their corresponding values in the matrix profile.
         :rtype: numpy array
         """
-        pass
+        profile = self._matrix_profile.copy()
+        motifs = np.empty((num_motifs, 2), dtype=int)
+        exclusion_number = round(self.window_size * exclusion_zone + 1e-5)
+        for i in range(num_motifs):
+            motifs[i][0] = np.argmin(profile)
+            motifs[i][1] = self._index_profile[motifs[i][0]]
+            if profile[motifs[i][0]] == np.inf:
+                return motifs[:i, :]
+            lower_bound = max(0, motifs[i][0] - exclusion_number)
+            upper_bound = min(len(profile), motifs[i][0] + exclusion_number) + 1
+            profile[lower_bound:upper_bound] = np.inf
+            lower_bound = max(0, motifs[i][1] - exclusion_number)
+            upper_bound = min(len(profile), motifs[i][1] + exclusion_number) + 1
+            profile[lower_bound:upper_bound] = np.inf
+        return motifs
 
 
 class STAMP(MatrixProfile):

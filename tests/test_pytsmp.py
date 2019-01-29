@@ -349,59 +349,59 @@ class TestConvFunctions:
                                          "update_ts1 and update_ts2 should update the index profile multiple times " \
                                          "properly when ts1 == ts2."
 
-    def test_find_discord_sanity1(self):
+    def test_find_discords_sanity1(self):
         n = np.random.randint(200, 1000)
         t = np.random.rand(n)
         w = np.random.randint(10, n // 4)
         mp = pytsmp.STAMP(t, window_size=w, verbose=False)
         mpro, ipro = mp.get_profiles()
-        discords = mp.find_discord(n - w + 1, exclusion_zone=0)
+        discords = mp.find_discords(n - w + 1, exclusion_zone=0)
         mp_discords = mpro[discords]
-        assert len(discords) == n - w + 1, "find_discord_snaity1: find_discord should return the correct number of discords."
-        assert (mp_discords[1:] <= mp_discords[:-1]).all(), "find_discord_sanity1: find_discord should return " \
+        assert len(discords) == n - w + 1, "find_discords_snaity1: find_discords should return the correct number of discords."
+        assert (mp_discords[1:] <= mp_discords[:-1]).all(), "find_discords_sanity1: find_discords should return " \
                                                             "discords in descending order of profile values."
 
-    def test_find_discord_sanity2(self):
+    def test_find_discords_sanity2(self):
         n = np.random.randint(200, 1000)
         t = np.random.rand(n)
         w = np.random.randint(10, n // 4)
         mp = pytsmp.STAMP(t, window_size=w, verbose=False)
         mpro, ipro = mp.get_profiles()
-        discords = mp.find_discord(n - w + 1, exclusion_zone=1/2)
+        discords = mp.find_discords(n - w + 1, exclusion_zone=1/2)
         mp_discords = mpro[discords]
         assert (n - w + 1) // w <= len(discords) <= (n - w + 1) // w * 2 + 1, \
-            "find_discord_snaity2: find_discord should not return more than the max possible number of discords."
-        assert (mp_discords[1:] <= mp_discords[:-1]).all(), "find_discord_sanity2: find_discord should return " \
+            "find_discords_snaity2: find_discords should not return more than the max possible number of discords."
+        assert (mp_discords[1:] <= mp_discords[:-1]).all(), "find_discords_sanity2: find_discords should return " \
                                                             "discords in descending order of profile values."
 
-    def test_find_discord_sanity3(self):
+    def test_find_discords_sanity3(self):
         n = np.random.randint(200, 1000)
         t = np.random.rand(n)
         w = np.random.randint(10, n // 5)
         num_discords = 5
         mp = pytsmp.STAMP(t, window_size=w, verbose=False)
         mpro, ipro = mp.get_profiles()
-        discords = mp.find_discord(num_discords, exclusion_zone=1/2)
+        discords = mp.find_discords(num_discords, exclusion_zone=1/2)
         mp_discords = mpro[discords]
-        assert len(discords) == num_discords, "find_discord_snaity3: find_discord should return the desired number of discords."
-        assert (mp_discords[1:] <= mp_discords[:-1]).all(), "find_discord_sanity3: find_discord should return " \
+        assert len(discords) == num_discords, "find_discords_snaity3: find_discords should return the desired number of discords."
+        assert (mp_discords[1:] <= mp_discords[:-1]).all(), "find_discords_sanity3: find_discords should return " \
                                                             "discords in descending order of profile values."
 
-    def test_find_discord_anomaly(self):
+    def test_find_discords_anomaly(self):
         """
-        find_discord should be able to locate obvious anomaly.
+        find_discords should be able to locate obvious anomaly.
         """
         n = np.random.randint(200, 500)
         t = np.random.rand(n)
-        t = np.array([t, t, t]).ravel()
+        t = np.tile(t, 4)
         w = np.random.randint(10, n // 4)
         ab = np.random.randint(n)
         t[ab] += 5
         mp = pytsmp.STAMP(t, window_size=w, verbose=False)
-        discords = np.sort(mp.find_discord(1, exclusion_zone=1/2))
-        assert len(discords) == 1, "find_discord_anomaly: find_discord should return the desired number of discords."
+        discords = np.sort(mp.find_discords(1, exclusion_zone=1/2))
+        assert len(discords) == 1, "find_discords_anomaly: find_discords should return the desired number of discords."
         assert np.abs(ab - discords[0]) < w, \
-            "find_discord_anomaly: find_discord should be able to locate obvious anomaly."
+            "find_discords_anomaly: find_discords should be able to locate obvious anomaly."
 
 
 class TestSTOMP:
@@ -709,47 +709,6 @@ class TestPreSCRIMP:
         assert np.allclose(ipro, ip_naive), "PreSCRIMP_compute_matrix_profile_random_data: " \
                                             "Should compute the index profile correctly."
 
-    @pytest.mark.skip(reason="To be tested later.")
-    def test_PreSCRIMP_compute_matrix_profile_data1(self):
-        t = np.loadtxt("./data/random_walk_data.csv")
-        mpro_ans = np.loadtxt("./data/random_walk_data_mpro.csv")
-        ipro_ans = np.loadtxt("./data/random_walk_data_ipro.csv")
-        w = 50
-        mp = pytsmp.PreSCRIMP(t, window_size=w, verbose=False)
-        mpro, ipro = mp.get_profiles()
-        assert np.allclose(mpro, mpro_ans), "PreSCRIMP_compute_matrix_profile_data1: " \
-                                            "Should compute the matrix profile correctly. " \
-                                            "Max error is {}".format(np.max(np.abs(mpro - mpro_ans)))
-        # assert np.allclose(ipro, ipro_ans), "PreSCRIMP_compute_matrix_profile_data1: " \
-        #                                     "Should compute the index profile correctly."
-
-    @pytest.mark.skip(reason="To be tested later.")
-    def test_PreSCRIMP_compute_matrix_profile_data2(self):
-        t = np.loadtxt("./data/candy_production.csv")
-        mpro_ans = np.loadtxt("./data/candy_production_mpro.csv")
-        ipro_ans = np.loadtxt("./data/candy_production_ipro.csv")
-        w = 80
-        mp = pytsmp.PreSCRIMP(t, window_size=w, verbose=False)
-        mpro, ipro = mp.get_profiles()
-        assert np.allclose(mpro, mpro_ans), "PreSCRIMP_compute_matrix_profile_data2: " \
-                                            "Should compute the matrix profile correctly. " \
-                                            "Max error is {}".format(np.max(np.abs(mpro - mpro_ans)))
-        assert np.allclose(ipro, ipro_ans), "PreSCRIMP_compute_matrix_profile_data1: " \
-                                            "Should compute the index profile correctly."
-
-    @pytest.mark.skip(reason="To be tested later.")
-    def test_PreSCRIMP_compute_matrix_profile_data3(self):
-        t = np.loadtxt("./data/bitcoin_price.csv")
-        mpro_ans = np.loadtxt("./data/bitcoin_price_mpro.csv")
-        ipro_ans = np.loadtxt("./data/bitcoin_price_ipro.csv")
-        w = 100
-        mp = pytsmp.PreSCRIMP(t, window_size=w, verbose=False)
-        mpro, ipro = mp.get_profiles()
-        assert np.allclose(mpro, mpro_ans), "PreSCRIMP_compute_matrix_profile_data3: " \
-                                            "Should compute the matrix profile correctly. " \
-                                            "Max error is {}".format(np.max(np.abs(mpro - mpro_ans)))
-        assert np.allclose(ipro, ipro_ans), "PreSCRIMP_compute_matrix_profile_data3: " \
-                                            "Should compute the index profile correctly."
 
 class TestSCRIMP_PreSCRIMP:
     def test_SCRIMP_init_incorrect_pre_scrimp(self):
