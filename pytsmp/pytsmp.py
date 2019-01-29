@@ -178,7 +178,7 @@ class MatrixProfile(ABC):
             D = utils.mass(s, self.ts1)
             self._elementwise_min(D, idx)
 
-    def discord(self, num_discords, exclusion_zone=None):
+    def find_discord(self, num_discords, exclusion_zone=None):
         """
         Find the top discords of the time series from the matrix profile.
 

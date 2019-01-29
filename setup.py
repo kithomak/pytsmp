@@ -20,7 +20,7 @@ setup(
     license='MIT',
 
     author="Kit-Ho Mak",
-    author_email="khmak@astri.org",
+    author_email="kithomak23@gmail.com",
 
     description="A Python implementation of the matrix profile",
     long_description=read("README.rst"),
