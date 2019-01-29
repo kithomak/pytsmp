@@ -185,7 +185,7 @@ class MatrixProfile(ABC):
         :param float exclusion_zone: The exclusion zone from either side of a previously found discord. The length
                                      of exclusion zone is this number times window_size, centered at the point
                                      of interest. Must be non-negative.
-        :return: The indexes of the discord found, sorted by their corresponding values in the matrix profile.
+        :return: The indexes of the discords found, sorted by their corresponding values in the matrix profile.
         :rtype: numpy array
         """
         profile = self._matrix_profile.copy()
@@ -193,10 +193,25 @@ class MatrixProfile(ABC):
         exclusion_number = round(self.window_size * exclusion_zone + 1e-5)
         for i in range(num_discords):
             discords[i] = np.argmax(profile)
+            if profile[discords[i]] == -np.inf:
+                return discords[:i]
             lower_bound = max(0, discords[i] - exclusion_number)
             upper_bound = min(len(profile), discords[i] + exclusion_number) + 1
             profile[lower_bound:upper_bound] = -np.inf
         return discords
+
+    def find_motif(self, num_motifs, exclusion_zone=0):
+        """
+        Find the top motifs of the time series from the matrix profile.
+
+        :param int num_motifs: (Max) number of motifs to be found. Must be positive.
+        :param float exclusion_zone: The exclusion zone from either side of a previously found motif. The length
+                                     of exclusion zone is this number times window_size, centered at the point
+                                     of interest. Must be non-negative.
+        :return: The index pairs of the motifs found, sorted by their corresponding values in the matrix profile.
+        :rtype: numpy array
+        """
+        pass
 
 
 class STAMP(MatrixProfile):
