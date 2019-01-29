@@ -387,6 +387,22 @@ class TestConvFunctions:
         assert (mp_discords[1:] <= mp_discords[:-1]).all(), "find_discord_sanity3: find_discord should return " \
                                                             "discords in descending order of profile values."
 
+    def test_find_discord_anomaly(self):
+        """
+        find_discord should be able to locate obvious anomaly.
+        """
+        n = np.random.randint(200, 500)
+        t = np.random.rand(n)
+        t = np.array([t, t, t]).ravel()
+        w = np.random.randint(10, n // 4)
+        ab = np.random.randint(n)
+        t[ab] += 5
+        mp = pytsmp.STAMP(t, window_size=w, verbose=False)
+        discords = np.sort(mp.find_discord(1, exclusion_zone=1/2))
+        assert len(discords) == 1, "find_discord_anomaly: find_discord should return the desired number of discords."
+        assert np.abs(ab - discords[0]) < w, \
+            "find_discord_anomaly: find_discord should be able to locate obvious anomaly."
+
 
 class TestSTOMP:
     def test_STOMP_is_anytime(self):
