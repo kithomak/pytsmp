@@ -164,7 +164,12 @@ class TestSTAMP:
         assert np.allclose(ipro, ipro_ans), "STAMP_compute_matrix_profile_data3: " \
                                             "Should compute the index profile correctly."
 
-    def test_STAMP_update_ts1_random_data(self):
+
+class TestConvFunctions:
+    """
+    The class for tests of helper functions independent of matrix profile classes.
+    """
+    def test_update_ts1_random_data(self):
         n = np.random.randint(200, 1000)
         m = np.random.randint(200, 1000)
         t1 = np.random.rand(n)
@@ -175,13 +180,13 @@ class TestSTAMP:
         mpro, ipro = mp.get_profiles()
         mp2 = pytsmp.STAMP(t1, t2, window_size=w, verbose=False)
         mpro2, ipro2 = mp2.get_profiles()
-        assert np.allclose(mpro, mpro2), "STAMP_update_ts1_random_data: " \
+        assert np.allclose(mpro, mpro2), "update_ts1_random_data: " \
                                          "update_ts1 should update the matrix profile properly on random data. " \
                                          "Max error is {}".format(np.max(np.abs(mpro - mpro2)))
-        assert np.allclose(ipro, ipro2), "STAMP_update_ts1_random_data: " \
+        assert np.allclose(ipro, ipro2), "update_ts1_random_data: " \
                                          "update_ts1 should update the index profile properly on random data."
 
-    def test_STAMP_update_ts1_multiple_random_data(self):
+    def test_update_ts1_multiple_random_data(self):
         n = np.random.randint(200, 1000)
         m = np.random.randint(200, 1000)
         t1 = np.random.rand(n)
@@ -194,13 +199,13 @@ class TestSTAMP:
         mpro, ipro = mp.get_profiles()
         mp2 = pytsmp.STAMP(t1, t2, window_size=w, verbose=False)
         mpro2, ipro2 = mp2.get_profiles()
-        assert np.allclose(mpro, mpro2), "STAMP_update_ts1_multiple_random_data: " \
+        assert np.allclose(mpro, mpro2), "update_ts1_multiple_random_data: " \
                                          "update_ts1 should update the matrix profile multiple times properly on random data. " \
                                          "Max error is {}".format(np.max(np.abs(mpro - mpro2)))
-        assert np.allclose(ipro, ipro2), "STAMP_update_ts1_random_data: " \
+        assert np.allclose(ipro, ipro2), "update_ts1_random_data: " \
                                          "update_ts1 should update the index profile multiple times properly on random data."
 
-    def test_STAMP_update_ts2_random_data(self):
+    def test_update_ts2_random_data(self):
         n = np.random.randint(200, 1000)
         m = np.random.randint(200, 1000)
         t1 = np.random.rand(n)
@@ -211,13 +216,13 @@ class TestSTAMP:
         mpro, ipro = mp.get_profiles()
         mp2 = pytsmp.STAMP(t1, t2, window_size=w, verbose=False)
         mpro2, ipro2 = mp2.get_profiles()
-        assert np.allclose(mpro, mpro2), "STAMP_update_ts2_random_data: " \
+        assert np.allclose(mpro, mpro2), "update_ts2_random_data: " \
                                          "update_ts2 should update the matrix profile properly on random data. " \
                                          "Max error is {}".format(np.max(np.abs(mpro - mpro2)))
-        assert np.allclose(ipro, ipro2), "STAMP_update_ts2_random_data: " \
+        assert np.allclose(ipro, ipro2), "update_ts2_random_data: " \
                                          "update_ts2 should update the index profile properly on random data."
 
-    def test_STAMP_update_ts2_multiple_random_data(self):
+    def test_update_ts2_multiple_random_data(self):
         n = np.random.randint(200, 1000)
         m = np.random.randint(200, 1000)
         t1 = np.random.rand(n)
@@ -230,13 +235,13 @@ class TestSTAMP:
         mpro, ipro = mp.get_profiles()
         mp2 = pytsmp.STAMP(t1, t2, window_size=w, verbose=False)
         mpro2, ipro2 = mp2.get_profiles()
-        assert np.allclose(mpro, mpro2), "STAMP_update_ts2_multiple_random_data: " \
+        assert np.allclose(mpro, mpro2), "update_ts2_multiple_random_data: " \
                                          "update_ts2 should update the matrix profile multiple times properly on random data. " \
                                          "Max error is {}".format(np.max(np.abs(mpro - mpro2)))
-        assert np.allclose(ipro, ipro2), "STAMP_update_ts2_random_data: " \
+        assert np.allclose(ipro, ipro2), "update_ts2_random_data: " \
                                          "update_ts2 should update the index profile multiple times properly on random data."
 
-    def test_STAMP_update_interleave_random_data(self):
+    def test_update_interleave_random_data(self):
         n = np.random.randint(200, 1000)
         m = np.random.randint(200, 1000)
         t1 = np.random.rand(n)
@@ -250,15 +255,15 @@ class TestSTAMP:
         mpro, ipro = mp.get_profiles()
         mp2 = pytsmp.STAMP(t1, t2, window_size=w, verbose=False)
         mpro2, ipro2 = mp2.get_profiles()
-        assert np.allclose(mpro, mpro2), "STAMP_update_interleave_random_data: " \
+        assert np.allclose(mpro, mpro2), "update_interleave_random_data: " \
                                          "update_ts1 and update_ts2 should update the matrix profile multiple times " \
                                          "properly on random data. " \
                                          "Max error is {}".format(np.max(np.abs(mpro - mpro2)))
-        assert np.allclose(ipro, ipro2), "STAMP_update_interleave_random_data: " \
+        assert np.allclose(ipro, ipro2), "update_interleave_random_data: " \
                                          "update_ts1 and update_ts2 should update the index profile multiple times " \
                                          "properly on random data."
 
-    def test_STAMP_update_ts1_same_data(self):
+    def test_update_ts1_same_data(self):
         n = np.random.randint(200, 1000)
         t = np.random.rand(n)
         w = np.random.randint(10, n // 4)
@@ -267,13 +272,13 @@ class TestSTAMP:
         mpro, ipro = mp.get_profiles()
         mp2 = pytsmp.STAMP(t, window_size=w, verbose=False)
         mpro2, ipro2 = mp2.get_profiles()
-        assert np.allclose(mpro, mpro2), "STAMP_update_ts1_same_data: " \
+        assert np.allclose(mpro, mpro2), "update_ts1_same_data: " \
                                          "update_ts1 should update the matrix profile properly when ts1 == ts2. " \
                                          "Max error is {}".format(np.max(np.abs(mpro - mpro2)))
-        assert np.allclose(ipro, ipro2), "STAMP_update_ts1_same_data: " \
+        assert np.allclose(ipro, ipro2), "update_ts1_same_data: " \
                                          "update_ts1 should update the index profile properly when ts1 == ts2."
 
-    def test_STAMP_update_ts1_multiple_same_data(self):
+    def test_update_ts1_multiple_same_data(self):
         n = np.random.randint(200, 1000)
         t = np.random.rand(n)
         w = np.random.randint(10, n // 4)
@@ -284,13 +289,13 @@ class TestSTAMP:
         mpro, ipro = mp.get_profiles()
         mp2 = pytsmp.STAMP(t, window_size=w, verbose=False)
         mpro2, ipro2 = mp2.get_profiles()
-        assert np.allclose(mpro, mpro2), "STAMP_update_ts1_multiple_same_data: " \
+        assert np.allclose(mpro, mpro2), "update_ts1_multiple_same_data: " \
                                          "update_ts1 should update the matrix profile multiple times properly when ts1 == ts2. " \
                                          "Max error is {}".format(np.max(np.abs(mpro - mpro2)))
-        assert np.allclose(ipro, ipro2), "STAMP_update_ts1_multiple_same_data: " \
+        assert np.allclose(ipro, ipro2), "update_ts1_multiple_same_data: " \
                                          "update_ts1 should update the index profile multiple times properly when ts1 == ts2."
 
-    def test_STAMP_update_ts2_same_data(self):
+    def test_update_ts2_same_data(self):
         n = np.random.randint(200, 1000)
         t = np.random.rand(n)
         w = np.random.randint(10, n // 4)
@@ -299,13 +304,13 @@ class TestSTAMP:
         mpro, ipro = mp.get_profiles()
         mp2 = pytsmp.STAMP(t, window_size=w, verbose=False)
         mpro2, ipro2 = mp2.get_profiles()
-        assert np.allclose(mpro, mpro2), "STAMP_update_ts2_same_data: " \
+        assert np.allclose(mpro, mpro2), "update_ts2_same_data: " \
                                          "update_ts2 should update the matrix profile properly when ts1 == ts2. " \
                                          "Max error is {}".format(np.max(np.abs(mpro - mpro2)))
-        assert np.allclose(ipro, ipro2), "STAMP_update_ts2_same_data: " \
+        assert np.allclose(ipro, ipro2), "update_ts2_same_data: " \
                                          "update_ts2 should update the index profile properly when ts1 == ts2."
 
-    def test_STAMP_update_ts2_multiple_same_data(self):
+    def test_update_ts2_multiple_same_data(self):
         n = np.random.randint(200, 1000)
         t = np.random.rand(n)
         w = np.random.randint(10, n // 4)
@@ -316,13 +321,13 @@ class TestSTAMP:
         mpro, ipro = mp.get_profiles()
         mp2 = pytsmp.STAMP(t, window_size=w, verbose=False)
         mpro2, ipro2 = mp2.get_profiles()
-        assert np.allclose(mpro, mpro2), "STAMP_update_ts2_multiple_same_data: " \
+        assert np.allclose(mpro, mpro2), "update_ts2_multiple_same_data: " \
                                          "update_ts2 should update the matrix profile multiple times properly when ts1 == ts2. " \
                                          "Max error is {}".format(np.max(np.abs(mpro - mpro2)))
-        assert np.allclose(ipro, ipro2), "STAMP_update_ts2_multiple_same_data: " \
+        assert np.allclose(ipro, ipro2), "update_ts2_multiple_same_data: " \
                                          "update_ts2 should update the index profile multiple times properly when ts1 == ts2."
 
-    def test_STAMP_update_interleave_same_data(self):
+    def test_update_interleave_same_data(self):
         n = np.random.randint(200, 1000)
         t = np.random.rand(n)
         w = np.random.randint(10, n // 4)
@@ -336,13 +341,68 @@ class TestSTAMP:
         mpro, ipro = mp.get_profiles()
         mp2 = pytsmp.STAMP(t, window_size=w, verbose=False)
         mpro2, ipro2 = mp2.get_profiles()
-        assert np.allclose(mpro, mpro2), "STAMP_update_interleave_same_data: " \
+        assert np.allclose(mpro, mpro2), "update_interleave_same_data: " \
                                          "update_ts1 and update_ts2 should update the matrix profile multiple times " \
                                          "properly when ts1 == ts2. " \
                                          "Max error is {}".format(np.max(np.abs(mpro - mpro2)))
-        assert np.allclose(ipro, ipro2), "STAMP_update_interleave_same_data: " \
+        assert np.allclose(ipro, ipro2), "update_interleave_same_data: " \
                                          "update_ts1 and update_ts2 should update the index profile multiple times " \
                                          "properly when ts1 == ts2."
+
+    def test_find_discord_sanity1(self):
+        n = np.random.randint(200, 1000)
+        t = np.random.rand(n)
+        w = np.random.randint(10, n // 4)
+        mp = pytsmp.STAMP(t, window_size=w, verbose=False)
+        mpro, ipro = mp.get_profiles()
+        discords = mp.find_discord(n - w + 1, exclusion_zone=0)
+        mp_discords = mpro[discords]
+        assert len(discords) == n - w + 1, "find_discord_snaity1: find_discord should return the correct number of discords."
+        assert (mp_discords[1:] <= mp_discords[:-1]).all(), "find_discord_sanity1: find_discord should return " \
+                                                            "discords in descending order of profile values."
+
+    def test_find_discord_sanity2(self):
+        n = np.random.randint(200, 1000)
+        t = np.random.rand(n)
+        w = np.random.randint(10, n // 4)
+        mp = pytsmp.STAMP(t, window_size=w, verbose=False)
+        mpro, ipro = mp.get_profiles()
+        discords = mp.find_discord(n - w + 1, exclusion_zone=1/2)
+        mp_discords = mpro[discords]
+        assert (n - w + 1) // w <= len(discords) <= (n - w + 1) // w * 2, \
+            "find_discord_snaity2: find_discord should not return more than the max possible number of discords."
+        assert (mp_discords[1:] <= mp_discords[:-1]).all(), "find_discord_sanity2: find_discord should return " \
+                                                            "discords in descending order of profile values."
+
+    def test_find_discord_sanity3(self):
+        n = np.random.randint(200, 1000)
+        t = np.random.rand(n)
+        w = np.random.randint(10, n // 5)
+        num_discords = 5
+        mp = pytsmp.STAMP(t, window_size=w, verbose=False)
+        mpro, ipro = mp.get_profiles()
+        discords = mp.find_discord(num_discords, exclusion_zone=1/2)
+        mp_discords = mpro[discords]
+        assert len(discords) == num_discords, "find_discord_snaity3: find_discord should return the desired number of discords."
+        assert (mp_discords[1:] <= mp_discords[:-1]).all(), "find_discord_sanity3: find_discord should return " \
+                                                            "discords in descending order of profile values."
+        
+    def test_find_discord_anomaly(self):
+        """
+        find_discord should be able to locate obvious anomaly.
+        """
+        n = np.random.randint(200, 1000)
+        t = np.random.rand(n)
+        w = np.random.randint(10, n // 4)
+        ab1 = np.random.randint(n // 2)
+        ab2 = np.random.randint(ab1 + w, n)
+        t[ab1] += 5
+        t[ab2] -= 5
+        mp = pytsmp.STAMP(t, window_size=w, verbose=False)
+        discords = np.sort(mp.find_discord(2, exclusion_zone=1/2))
+        assert len(discords) == 2, "find_discord_anomaly: find_discord should return the desired number of discords."
+        assert np.abs(ab1 - discords[0]) < w and np.abs(ab2 - discords[1]) < w, \
+            "find_discord_anomaly: find_discord should be able to locate obvious anomaly."
 
 
 class TestSTOMP:
@@ -455,7 +515,7 @@ class TestSTOMP:
 class TestSCRIMP:
     def test_SCRIMP_is_anytime(self):
         t = np.random.rand(1000)
-        mp = pytsmp.SCRIMP(t, window_size=10, s_size=1, verbose=True, pre_scrimp=0)
+        mp = pytsmp.SCRIMP(t, window_size=10, s_size=1, verbose=True, pre_scrimp=1)
         is_anytime = mp.is_anytime
         assert is_anytime == True, "SCRIMP_is_anytime: SCRIMP should be an anytime algorithm."
 
