@@ -369,7 +369,7 @@ class TestConvFunctions:
         mpro, ipro = mp.get_profiles()
         discords = mp.find_discord(n - w + 1, exclusion_zone=1/2)
         mp_discords = mpro[discords]
-        assert (n - w + 1) // w <= len(discords) <= (n - w + 1) // w * 2, \
+        assert (n - w + 1) // w <= len(discords) <= (n - w + 1) // w * 2 + 1, \
             "find_discord_snaity2: find_discord should not return more than the max possible number of discords."
         assert (mp_discords[1:] <= mp_discords[:-1]).all(), "find_discord_sanity2: find_discord should return " \
                                                             "discords in descending order of profile values."
@@ -386,23 +386,6 @@ class TestConvFunctions:
         assert len(discords) == num_discords, "find_discord_snaity3: find_discord should return the desired number of discords."
         assert (mp_discords[1:] <= mp_discords[:-1]).all(), "find_discord_sanity3: find_discord should return " \
                                                             "discords in descending order of profile values."
-        
-    def test_find_discord_anomaly(self):
-        """
-        find_discord should be able to locate obvious anomaly.
-        """
-        n = np.random.randint(200, 1000)
-        t = np.random.rand(n)
-        w = np.random.randint(10, n // 4)
-        ab1 = np.random.randint(n // 2)
-        ab2 = np.random.randint(ab1 + w, n)
-        t[ab1] += 5
-        t[ab2] -= 5
-        mp = pytsmp.STAMP(t, window_size=w, verbose=False)
-        discords = np.sort(mp.find_discord(2, exclusion_zone=1/2))
-        assert len(discords) == 2, "find_discord_anomaly: find_discord should return the desired number of discords."
-        assert np.abs(ab1 - discords[0]) < w and np.abs(ab2 - discords[1]) < w, \
-            "find_discord_anomaly: find_discord should be able to locate obvious anomaly."
 
 
 class TestSTOMP:
