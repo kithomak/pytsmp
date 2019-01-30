@@ -9,6 +9,9 @@ class MatrixProfile(ABC):
     """
     The base class for matrix profile computation. This is an abstract class, you cannot instantiate from this class.
     """
+    
+    _epsilon = 1e-5  # a small positive value to be used in various places
+    
     def __init__(self, ts1, ts2=None, window_size=None, exclusion_zone=1/2, verbose=True, s_size=1, seed=None):
         """
         Base constructor.
@@ -37,7 +40,7 @@ class MatrixProfile(ABC):
             raise ValueError("Incorrect window size specified.")
         if exclusion_zone >= 0:
             self.ez = exclusion_zone
-            self.exclusion_zone = round(window_size * exclusion_zone + 1e-5)
+            self.exclusion_zone = round(window_size * exclusion_zone + self._epsilon)
         else:
             raise ValueError("Exclusion zone must be non-negative.")
         self.verbose = bool(verbose)
@@ -177,20 +180,31 @@ class MatrixProfile(ABC):
             D = utils.mass(s, self.ts1)
             self._elementwise_min(D, idx)
 
-    def find_discords(self, num_discords, exclusion_zone=0):
+    def find_discords(self, num_discords, exclusion_zone=None):
         """
         Find the top discords of the time series from the matrix profile.
 
         :param int num_discords: (Max) number of discord to be found. Must be positive.
-        :param float exclusion_zone: The exclusion zone from either side of a previously found discord. The length
-                                     of exclusion zone is this number times window_size, centered at the point
-                                     of interest. Must be non-negative.
+        :param exclusion_zone: The exclusion zone from either side of a previously found discord. None means
+                               to use the same exclusion_zone as defined in creating the matrix profile. The length
+                               of exclusion zone is this number times window_size, centered at the point
+                               of interest. Must be non-negative if not None.
+        :type exclusion_zone: float or None
         :return: The indexes of the discords found, sorted by their corresponding values in the matrix profile.
         :rtype: numpy array
+        :raises: ValueError: If the input is invalid.
         """
         profile = self._matrix_profile.copy()
-        discords = np.empty(num_discords, dtype=int)
-        exclusion_number = round(self.window_size * exclusion_zone + 1e-5)
+        if num_discords > 0 and type(num_discords) == int:
+            discords = np.empty(num_discords, dtype=int)
+        else:
+            raise ValueError("Incorrect num_discords entered.")
+        if exclusion_zone is None:
+            exclusion_zone = self.exclusion_zone
+        if exclusion_zone >= 0:
+            exclusion_number = round(self.window_size * exclusion_zone + self._epsilon)
+        else:
+            raise ValueError("Exclusion zone must be non-negative.")
         for i in range(num_discords):
             discords[i] = np.argmax(profile)
             if profile[discords[i]] == -np.inf:
@@ -200,20 +214,34 @@ class MatrixProfile(ABC):
             profile[lower_bound:upper_bound] = -np.inf
         return discords
 
-    def find_motifs(self, num_motifs, exclusion_zone=0):
+    def find_motifs(self, num_motifs, exclusion_zone=None):
         """
         Find the top motifs of the time series from the matrix profile.
 
+        **Note**: The behaviour of this function does not match that of the implementation in R.
+
         :param int num_motifs: (Max) number of motifs to be found. Must be positive.
-        :param float exclusion_zone: The exclusion zone from either side of a previously found motif. The length
-                                     of exclusion zone is this number times window_size, centered at the point
-                                     of interest. Must be non-negative.
-        :return: The index pairs of the motifs found, sorted by their corresponding values in the matrix profile.
+        :param exclusion_zone: The exclusion zone from either side of a previously found motif. None means
+                               to use the same exclusion_zone as defined in creating the matrix profile. The length
+                               of exclusion zone is this number times window_size, centered at the point
+                               of interest. Must be non-negative if not None.
+        :type exclusion_zone: float or None
+        :return: The index pairs of the motifs found (of shape (n, 2) where n is the number of motifs found),
+                 sorted by their corresponding values in the matrix profile.
         :rtype: numpy array
+        :raises: ValueError: If the input is invalid.
         """
         profile = self._matrix_profile.copy()
-        motifs = np.empty((num_motifs, 2), dtype=int)
-        exclusion_number = round(self.window_size * exclusion_zone + 1e-5)
+        if num_motifs > 0 and type(num_motifs) == int:
+            motifs = np.empty((num_motifs, 2), dtype=int)
+        else:
+            raise ValueError("Incorrect num_motifs entered.")
+        if exclusion_zone is None:
+            exclusion_number = self.exclusion_zone
+        elif exclusion_zone >= 0:
+            exclusion_number = round(self.window_size * exclusion_zone + self._epsilon)
+        else:
+            raise ValueError("Exclusion zone must be non-negative.")
         for i in range(num_motifs):
             motifs[i][0] = np.argmin(profile)
             motifs[i][1] = self._index_profile[motifs[i][0]]
@@ -222,9 +250,10 @@ class MatrixProfile(ABC):
             lower_bound = max(0, motifs[i][0] - exclusion_number)
             upper_bound = min(len(profile), motifs[i][0] + exclusion_number) + 1
             profile[lower_bound:upper_bound] = np.inf
-            lower_bound = max(0, motifs[i][1] - exclusion_number)
-            upper_bound = min(len(profile), motifs[i][1] + exclusion_number) + 1
-            profile[lower_bound:upper_bound] = np.inf
+            if self._same_ts:
+                lower_bound = max(0, motifs[i][1] - exclusion_number)
+                upper_bound = min(len(profile), motifs[i][1] + exclusion_number) + 1
+                profile[lower_bound:upper_bound] = np.inf
         return motifs
 
 
@@ -268,7 +297,7 @@ class STAMP(MatrixProfile):
     @property
     def _iterator(self):
         idxes = np.random.RandomState(self.seed).permutation(range(len(self.ts2) - self.window_size + 1))
-        idxes = idxes[:round(self.s_size * len(idxes) + 1e-5)]
+        idxes = idxes[:round(self.s_size * len(idxes) + self._epsilon)]
         if self.verbose:
             _iterator = tqdm(idxes)
         else:
@@ -413,7 +442,7 @@ class SCRIMP(MatrixProfile):
         else:
             idxes = np.random.RandomState(self.seed).permutation(range(-len(self.ts1) + self.window_size,
                                                 len(self.ts2) - self.window_size + 1))
-        idxes = idxes[:round(self.s_size * len(idxes) + 1e-5)]
+        idxes = idxes[:round(self.s_size * len(idxes) + self._epsilon)]
         if self.verbose:
             _iterator = tqdm(idxes)
         else:
@@ -503,7 +532,7 @@ class PreSCRIMP(MatrixProfile):
             self.sr = sample_rate
         else:
             raise ValueError("sample_rate must be positive.")
-        self.sample_interval = round(window_size * sample_rate + 1e-5)
+        self.sample_interval = round(window_size * sample_rate + self._epsilon)
         super().__init__(ts1, ts2, window_size, exclusion_zone, verbose, s_size, seed)
 
     @property
@@ -520,7 +549,7 @@ class PreSCRIMP(MatrixProfile):
     @property
     def _iterator(self):
         idxes = np.random.RandomState(self.seed).permutation(range(0, len(self.ts2) - self.window_size + 1, self.sample_interval))
-        idxes = idxes[:round(self.s_size * len(idxes) + 1e-5)]
+        idxes = idxes[:round(self.s_size * len(idxes) + self._epsilon)]
         if self.verbose:
             _iterator = tqdm(idxes)
         else:

@@ -349,6 +349,34 @@ class TestConvFunctions:
                                          "update_ts1 and update_ts2 should update the index profile multiple times " \
                                          "properly when ts1 == ts2."
 
+    def test_find_discords_incorrect_num_discords1(self):
+        with pytest.raises(ValueError) as excinfo:
+            t = np.random.rand(1000)
+            mp = pytsmp.STAMP(t, window_size=10, verbose=False)
+            discords = mp.find_discords(-1)
+            assert str(excinfo.value) == "Incorrect num_discords entered."
+
+    def test_find_discords_incorrect_num_discords2(self):
+        with pytest.raises(ValueError) as excinfo:
+            t = np.random.rand(1000)
+            mp = pytsmp.STAMP(t, window_size=10, verbose=False)
+            discords = mp.find_discords(4.2)
+            assert str(excinfo.value) == "Incorrect num_discords entered."
+
+    def test_find_discords_incorrect_num_discords3(self):
+        with pytest.raises(ValueError) as excinfo:
+            t = np.random.rand(1000)
+            mp = pytsmp.STAMP(t, window_size=10, verbose=False)
+            discords = mp.find_discords(0)
+            assert str(excinfo.value) == "Incorrect num_discords entered."
+
+    def test_find_discords_incorrect_exclusion_zone(self):
+        with pytest.raises(ValueError) as excinfo:
+            t = np.random.rand(1000)
+            mp = pytsmp.STAMP(t, window_size=10, verbose=False)
+            discords = mp.find_discords(-1)
+            assert str(excinfo.value) == "Exclusion zone must be non-negative."
+
     def test_find_discords_sanity1(self):
         n = np.random.randint(200, 1000)
         t = np.random.rand(n)
@@ -395,13 +423,67 @@ class TestConvFunctions:
         t = np.random.rand(n)
         t = np.tile(t, 4)
         w = np.random.randint(10, n // 4)
-        ab = np.random.randint(n)
+        ab = np.random.randint(len(t))
         t[ab] += 5
         mp = pytsmp.STAMP(t, window_size=w, verbose=False)
         discords = np.sort(mp.find_discords(1, exclusion_zone=1/2))
         assert len(discords) == 1, "find_discords_anomaly: find_discords should return the desired number of discords."
         assert np.abs(ab - discords[0]) < w, \
             "find_discords_anomaly: find_discords should be able to locate obvious anomaly."
+
+    def test_find_motifs_incorrect_num_discords1(self):
+        with pytest.raises(ValueError) as excinfo:
+            t = np.random.rand(1000)
+            mp = pytsmp.STAMP(t, window_size=10, verbose=False)
+            motifs = mp.find_motifs(-1)
+            assert str(excinfo.value) == "Incorrect num_motifs entered."
+
+    def test_find_motifs_incorrect_num_motifs2(self):
+        with pytest.raises(ValueError) as excinfo:
+            t = np.random.rand(1000)
+            mp = pytsmp.STAMP(t, window_size=10, verbose=False)
+            motifs = mp.find_motifs(4.2)
+            assert str(excinfo.value) == "Incorrect num_motifs entered."
+
+    def test_find_motifs_incorrect_num_motifs3(self):
+        with pytest.raises(ValueError) as excinfo:
+            t = np.random.rand(1000)
+            mp = pytsmp.STAMP(t, window_size=10, verbose=False)
+            motifs = mp.find_motifs(0)
+            assert str(excinfo.value) == "Incorrect num_motifs entered."
+
+    def test_find_motifs_incorrect_exclusion_zone(self):
+        with pytest.raises(ValueError) as excinfo:
+            t = np.random.rand(1000)
+            mp = pytsmp.STAMP(t, window_size=10, verbose=False)
+            motifs = mp.find_motifs(-1)
+            assert str(excinfo.value) == "Exclusion zone must be non-negative."
+
+    def test_find_motifs_sanity1(self):
+        n = np.random.randint(200, 1000)
+        t = np.random.rand(n)
+        w = np.random.randint(10, n // 4)
+        mp = pytsmp.STAMP(t, window_size=w, verbose=False)
+        mpro, ipro = mp.get_profiles()
+        num_motifs = 5
+        motifs = mp.find_motifs(num_motifs, exclusion_zone=1/2)
+        mp_motifs = mpro[motifs]
+        assert len(motifs) == num_motifs, "find_motifs_snaity1: find_motifs should return the desired number of motifs."
+        assert (mp_motifs[1:, 0] >= mp_motifs[:-1, 0]).all(), "find_motifs_sanity1: find_motifs should return " \
+                                                            "motifs in ascending order of profile values."
+
+    def test_find_motifs_sanity2(self):
+        n = np.random.randint(200, 1000)
+        t = np.random.rand(n)
+        w = np.random.randint(10, n // 4)
+        mp = pytsmp.STAMP(t, window_size=w, verbose=False)
+        mpro, ipro = mp.get_profiles()
+        motifs = mp.find_motifs(n - w + 1, exclusion_zone=1/2)
+        mp_motifs = mpro[motifs]
+        assert (n - w + 1) // (2 * w) <= len(motifs) <= (n - w + 1) // w * 2 + 1, \
+            "find_motifs_snaity2: find_motifs should not return more than the max possible number of motifs."
+        assert (mp_motifs[1:, 0] >= mp_motifs[:-1, 0]).all(), "find_motifs_sanity2: find_motifs should return " \
+                                                            "motifs in descending order of profile values."
 
 
 class TestSTOMP:
