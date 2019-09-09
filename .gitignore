@@ -49,5 +49,6 @@ README.html
 .ipynb_checkpoints
 
 # Others
+.env
 .DS_Store
 sandbox
