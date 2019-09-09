@@ -200,8 +200,8 @@ class MatrixProfile(ABC):
         else:
             raise ValueError("Incorrect num_discords entered.")
         if exclusion_zone is None:
-            exclusion_zone = self.exclusion_zone
-        if exclusion_zone >= 0:
+            exclusion_number = self.exclusion_zone
+        elif exclusion_zone >= 0:
             exclusion_number = round(self.window_size * exclusion_zone + self._epsilon)
         else:
             raise ValueError("Exclusion zone must be non-negative.")

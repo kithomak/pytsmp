@@ -374,7 +374,7 @@ class TestConvFunctions:
         with pytest.raises(ValueError) as excinfo:
             t = np.random.rand(1000)
             mp = pytsmp.STAMP(t, window_size=10, verbose=False)
-            discords = mp.find_discords(-1)
+            discords = mp.find_discords(3, exclusion_zone=-1)
             assert str(excinfo.value) == "Exclusion zone must be non-negative."
 
     def test_find_discords_sanity1(self):
@@ -395,7 +395,7 @@ class TestConvFunctions:
         w = np.random.randint(10, n // 4)
         mp = pytsmp.STAMP(t, window_size=w, verbose=False)
         mpro, ipro = mp.get_profiles()
-        discords = mp.find_discords(n - w + 1, exclusion_zone=1/2)
+        discords = mp.find_discords(n - w + 1)  # exclusion_zone=None
         mp_discords = mpro[discords]
         assert (n - w + 1) // w <= len(discords) <= (n - w + 1) // w * 2 + 1, \
             "find_discords_snaity2: find_discords should not return more than the max possible number of discords."
@@ -456,7 +456,7 @@ class TestConvFunctions:
         with pytest.raises(ValueError) as excinfo:
             t = np.random.rand(1000)
             mp = pytsmp.STAMP(t, window_size=10, verbose=False)
-            motifs = mp.find_motifs(-1)
+            motifs = mp.find_motifs(5, exclusion_zone=-1)
             assert str(excinfo.value) == "Exclusion zone must be non-negative."
 
     def test_find_motifs_sanity1(self):
@@ -465,7 +465,7 @@ class TestConvFunctions:
         w = np.random.randint(10, n // 4)
         mp = pytsmp.STAMP(t, window_size=w, verbose=False)
         mpro, ipro = mp.get_profiles()
-        num_motifs = 5
+        num_motifs = 3
         motifs = mp.find_motifs(num_motifs, exclusion_zone=1/2)
         mp_motifs = mpro[motifs]
         assert len(motifs) == num_motifs, "find_motifs_snaity1: find_motifs should return the desired number of motifs."
@@ -478,7 +478,7 @@ class TestConvFunctions:
         w = np.random.randint(10, n // 4)
         mp = pytsmp.STAMP(t, window_size=w, verbose=False)
         mpro, ipro = mp.get_profiles()
-        motifs = mp.find_motifs(n - w + 1, exclusion_zone=1/2)
+        motifs = mp.find_motifs(n - w + 1)  # exclusion_zone=None
         mp_motifs = mpro[motifs]
         assert (n - w + 1) // (2 * w) <= len(motifs) <= (n - w + 1) // w * 2 + 1, \
             "find_motifs_snaity2: find_motifs should not return more than the max possible number of motifs."
