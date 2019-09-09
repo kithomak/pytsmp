@@ -29,7 +29,8 @@ setup(
 
     install_requires=[
         "numpy>=1.13.0",
-        "tqdm>=4.25.0"
+        "tqdm>=4.25.0",
+        "setuptools>=39.0.1"
     ],
 
     classifiers=[
