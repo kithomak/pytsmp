@@ -1,28 +1,20 @@
 pytsmp
 ======
 
-.. image:: https://gitlab.com/mcnuggets23/pytsmp/badges/master/pipeline.svg
-       :target: https://gitlab.com/mcnuggets23/pytsmp/commits/master
-       :alt: Latest build status
 
-.. image:: https://gitlab.com/mcnuggets23/pytsmp/badges/master/coverage.svg
-        :target: https://gitlab.com/mcnuggets23/pytsmp/commits/master
-        :alt: Latest coverage status
+.. image:: https://img.shields.io/pypi/v/pytsmp.svg
+   :target: https://pypi.python.org/pypi/pytsmp
+   :alt: Latest PyPI version
 
-.. comment
-    .. image:: https://img.shields.io/pypi/v/pytsmp.svg
-        :target: https://pypi.python.org/pypi/pytsmp
-        :alt: Latest PyPI version
+.. image:: https://codecov.io/gh/kithomak/pytsmp/branch/master/graph/badge.svg
+   :target: https://codecov.io/gh/kithomak/pytsmp/branch/master
+   :alt: Latest Codecov status
 
-.. comment
-    .. image:: https://codecov.io/gh/kithomak/pytsmp/branch/master/graph/badge.svg
-        :target: https://codecov.io/gh/kithomak/pytsmp/branch/master
-        :alt: Latest Codecov status
 
-.. comment
-    .. image:: https://travis-ci.org/kithomak/pytsmp.png
-       :target: https://travis-ci.org/kithomak/pytsmp
-       :alt: Latest Travis CI build status
+.. image:: https://travis-ci.org/kithomak/pytsmp.png
+   :target: https://travis-ci.org/kithomak/pytsmp
+   :alt: Latest Travis CI build status
+
 
 ``pytsmp`` is a Python implementation of the matrix profile. More details about matrix profile can be
 found in the `UCR Matrix Profile Page <http://www.cs.ucr.edu/~eamonn/MatrixProfile.html>`_
@@ -154,7 +146,9 @@ Y. Zhu, C.C.M. Yeh, Z. Zimmerman, K. Kamgar and E. Keogh.
 "Matrix Proﬁle XI: SCRIMP++: Time Series Motif Discovery at Interactive Speed". IEEE ICDM 2018.
 
 
-.. comment
-   `pytsmp` was written by Kit-Ho Mak at `ASTRI <https://www.astri.org>`_.
-
+Disclaimer
+----------
+This project is for my own learning and understanding purpose, and I may not be able to
+actively develop it from time to time. If you need a Python implementation of the matrix
+profile, you may try `matrixprofile-ts <https://github.com/target/matrixprofile-ts>`_.
 
